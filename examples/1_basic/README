@@ -1,0 +1,9 @@
+This example shows the most basic functioning of the framework.
+
+It consists of a simple server containing a router that recognizes any
+query path starting with /foo/. The controller that responds to such
+paths loads a trivial template from the disk and merges some basic
+data with it for output. 
+
+The example is very simple but shows the basic operation of the
+framework.
