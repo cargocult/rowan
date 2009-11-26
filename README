@@ -1,0 +1,32 @@
+Rowan Framework
+
+
+Rowan is a simple Microframework for node.js.
+
+It is designed as a modular and hierarchical microframework.
+
+Each controller in the hierarchy has the same structure: it takes a
+context object that contains both the Node.js request and response
+objects. It can either write to the response object, or it can throw
+an error to indicate somthing has gone wrong. These controllers are
+composed into a tree structure.
+
+Branches in the tree might dispatch a request based on a URL, for
+example, or might have a fallback in case their preferred child node
+raises an error.
+
+The code is based on my Python/WSGI Rowan framework code (on github at
+http://github.com/idmillington/Rowan-Python). There are two major
+differences between this Node.js implementation and that:
+
+1. This version doesn't have the hierarchical blackboard data
+structure that can be useful for hiding data from controllers. I might
+add this later, it certainly improves modularity.
+
+2. Because Node.js doesn't have an established templating language, I
+have added a simple templating system. Possibly too simple!
+
+I am using this microframework as the glue in an SOA project,
+integrating with conventional servers, databases and CouchDB.
+
+Get in touch with any observations or questions.
