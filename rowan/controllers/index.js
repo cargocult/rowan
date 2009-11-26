@@ -26,6 +26,7 @@ var errors = require('../core/errors');
 
 // Include sub-modules.
 exports.serve_file = require('./serve_file');
+exports.generic = require('./generic');
 
 /**
  * A router holds any number of child controllers along with a regular

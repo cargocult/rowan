@@ -9,3 +9,4 @@
 
 // Expose sub-modules.
 exports.errors = require('./errors');
+exports.promise = require('./promise');

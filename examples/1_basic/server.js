@@ -6,18 +6,10 @@ var sys = require('sys');
 var rowan = require('./rowan');
 
 // A controller that shows how to render something to a template.
-var display_foo = function (context) {
-    return rowan.template.render_template(
-        'templates/index.html', 
-        {title:'Hello World', items:['a', 'b', 'c']}
-    ).addCallback(
-        function (result) {
-            context.response.sendHeader(200, {'Content-Type':'text/html'});
-            context.response.sendBody(result);
-            context.response.finish();
-        }
-    );
-};
+var display_foo = rowan.controllers.generic.direct_to_template(
+    'templates/index.html', 
+    {title:'Hello World', items:['a', 'b', 'c']}
+);
 
 // A fallback controller based on elements in the URI.
 var display_bar = rowan.controllers.fallback([
@@ -33,11 +25,7 @@ var display_bar = rowan.controllers.fallback([
     },
 
     // The fallback controller just asks for it.
-    function (context) {
-        context.response.sendHeader(200, {'Content-Type':'text/plain'});
-        context.response.sendBody("What's the magic word?");
-        context.response.finish();
-    }
+    rowan.controllers.generic.direct_content("What's the magic word?")
 ]);
 
 // The URI fragments at the top level and the controllers they map to.
@@ -49,7 +37,7 @@ var urls = [
 
 // Build the controller tree.
 var router = rowan.controllers.router(urls);
-var root = router;//rowan.controllers.error_handler([500], router);
+var root = rowan.controllers.error_handler([500], router);
 
 // Create and run the server.
 rowan.createRowanServer(root).listen(8080);

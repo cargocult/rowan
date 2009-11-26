@@ -21,6 +21,7 @@
 
 var sys = require('sys');
 var posix = require('posix');
+var core = require('./core');
 
 var template_cache = {};
 
@@ -56,6 +57,8 @@ exports.load_template = load_template = function(template_path) {
             template = compile(content);
             template_cache[template_path] = template;
             promise.emitSuccess(template);
+        }).addErrback(function () {
+            promise.emitError();
         });
     }
 
@@ -72,6 +75,8 @@ exports.render_template = function(template_path, data) {
 
     load_template(template_path).addCallback(function (template) {
         promise.emitSuccess(template(data));
+    }).addErrback(function () {
+        promise.emitError();
     });
 
     return promise;
@@ -96,7 +101,7 @@ exports.compile = compile = function(template_text) {
             .split('\n').join("\\n") 
             .split("'").join("\\'") // We need single quotes, so escape them
             .replace(/{{(.*?)}}/g, "',$1,'") // Regular tags are just data
-            .split("{%").join("');") // Range open tags end a statement
+            .split("{%").join("');") // Range open tags end a JS statement
             .split("%}").join("; output.push('") // And close tags open one
 
         + "');} return output.join('');";

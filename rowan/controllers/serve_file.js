@@ -21,7 +21,7 @@ exports.serve = function(base_location) {
         base_location += '/';
     }
 
-    var fn = function(context) {
+    return function(context) {
         var path = context.remaining_path;
 
         // Make sure we've got no directory traversals in the path
@@ -57,7 +57,6 @@ exports.serve = function(base_location) {
         });
         return our_promise;
     };
-    return fn;
 };
 var file_extension_regex = /.*(\.\w+)$/;
 var traversal_regex = /(^|\/)\.\.\W/;
