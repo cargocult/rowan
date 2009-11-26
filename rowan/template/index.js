@@ -1,4 +1,4 @@
-/*
+/**
  * This module provides a simple templating system for Rowan using 
  * Javascript's eval() to run code interleaved with the template.
  * The syntax is inspired by Django / Jinja - double curly braces
@@ -10,9 +10,13 @@
  * of data. The properties in that object are the names that the template
  * can refer to.
  *
- * H/T The micro-templating approach used in this code was inspired by 
+ * H/T: The micro-templating approach used in this code was inspired by 
  * a blog post by John Resig at 
  * http://ejohn.org/blog/javascript-micro-templating/
+ */
+/*
+ * Part of the Rowan Microframework.
+ * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
 
 var sys = require('sys');

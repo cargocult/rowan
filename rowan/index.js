@@ -1,7 +1,11 @@
-/*
+/**
  * This module contains the main driver function that creates a rowan
  * server around a controller tree. See the controler module for more
  * information about how a Rowan tree is structured.
+ */
+/*
+ * Part of the Rowan Microframework.
+ * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
 
 var sys = require('sys');

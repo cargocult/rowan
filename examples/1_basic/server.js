@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
+ */
+
 var sys = require('sys');
 var rowan = require('./rowan');
 

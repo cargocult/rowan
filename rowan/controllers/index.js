@@ -1,4 +1,4 @@
-/*
+/**
  * This module supports the Rowan tree structure of elements in a web
  * application. The tree is made up of 'controllers' that are
  * functions which can be called with a single 'context'
@@ -11,6 +11,11 @@
  * With controllers that follow this structure, a web application can be
  * built from reusable components.
  */
+/*
+ * Part of the Rowan Microframework.
+ * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
+ */
+
 exports.HttpError = HttpError = function(description, status_code) {
     this.status_code = status_code;
     this.description = description;

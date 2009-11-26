@@ -5,5 +5,9 @@ query path starting with /foo/. The controller that responds to such
 paths loads a trivial template from the disk and merges some basic
 data with it for output. 
 
-The example is very simple but shows the basic operation of the
-framework.
+Note that the git-repository should install a symlink in this
+directory to the main rowan module. This allows rowan to be imported
+with require('./rowan') from the server.js file. If you package rowan
+and place it in the Node library path, you can remove the symlink and
+remove the './' from the start of the path. In general, however, I
+find it is easier to use the symlink approach.

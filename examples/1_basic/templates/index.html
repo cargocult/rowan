@@ -1,9 +1,21 @@
-<h1>This is the base template.</h1>
+<html>
+  <head>
+    <title>Example: The Foo View</title>
+    <meta name="copyright" content="Copyright (c) 2009 Ian Millington." />
+  </head>
+  <body>
+  
+    <h1>This is the Foo View</h1>
 
-<h2>Here is the {{title}}.</h2>
+    <h2>Here is the title data: {{title}}.</h2>
 
-<ul>
-{% for (i in items) { var item = items[i]; %}
-<li>{{item}}</li>
-{% } /* for */ %}
-</ul>
+    <h3>And here is a list iteration:</h3>
+
+    <ul>
+      {% for (i in items) { var item = items[i]; %}
+      <li>{{item}}</li>
+      {% } /* for */ %}
+    </ul>
+ </body>
+</html>
+
