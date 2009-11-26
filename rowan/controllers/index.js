@@ -11,7 +11,6 @@
  * With controllers that follow this structure, a web application can be
  * built from reusable components.
  */
-
 exports.HttpError = HttpError = function(description, status_code) {
     this.status_code = status_code;
     this.description = description;
@@ -47,8 +46,7 @@ exports.router = function(routes) {
                     path.substr(match.index + match[0].length);
 
                 // Call the view.
-                route.view(context);
-                return;
+                return route.view(context);
             }
         }
 
@@ -73,7 +71,7 @@ exports.error_handler = function(unhandled_errors, sub_controller) {
 
     var fn = function(context) {
         try {
-            sub_controller(context);
+            return sub_controller(context);
         } catch (err) {
             var status_code = err.status_code || 500;
             if (!unhandled_errors||unhandled_errors.indexOf(status_code) < 0) {
@@ -85,6 +83,8 @@ exports.error_handler = function(unhandled_errors, sub_controller) {
                     "<h1>"+status_code.toString()+" "+description+"</h1>"
                 );
                 response.finish();
+            } else {
+                throw err;
             }
         };        
     };
@@ -112,8 +112,7 @@ exports.fallback = function(valid_errors, sub_controllers) {
         for (i in sub_controllers) {
             var sub_controller = sub_controllers[i];
             try {
-                sub_controller(context);
-                return;
+                return sub_controller(context);
             } catch (err) {
                 if (status && valid_errors.indexOf(err.status_code) < 0) {
                     // We have an error that we're not allowed to absorb.

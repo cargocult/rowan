@@ -15,6 +15,12 @@ Branches in the tree might dispatch a request based on a URL, for
 example, or might have a fallback in case their preferred child node
 raises an error.
 
+Most often, however, the trees can be relatively flat. They might have
+an error_handler node at their root (which catches and reports any
+problems in the tree), then a single router which forwards different
+urls to controllers that generate the correct output. This pattern is
+shown in the first example application.
+
 The code is based on my Python/WSGI Rowan framework code (on github at
 http://github.com/idmillington/Rowan-Python). There are two major
 differences between this Node.js implementation and that:

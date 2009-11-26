@@ -1,22 +1,29 @@
 var sys = require('sys');
 var rowan = require('./rowan');
 
-var urls = [
-    {pattern:/^foo\//, view:function (context) {
-        rowan.template.render_template(
-            'templates/index.html', 
-            {title:'Hello World', items:['a', 'b', 'c']}
-        ).addCallback(
-            function (result) {
-                context.response.sendHeader(200, {'Content-Type':'text/html'});
-                context.response.sendBody(result);
-                context.response.finish();
-            }
-        );
-    }}
-];
-var root_controller = rowan.controllers.router(urls);
-//root_controller = rowan.controllers.error_handler(root_controller);
+// Controller functions for generating output.
+var display_foo = function (context) {
+    rowan.template.render_template(
+        'templates/index.html', 
+        {title:'Hello World', items:['a', 'b', 'c']}
+    ).addCallback(
+        function (result) {
+            context.response.sendHeader(200, {'Content-Type':'text/html'});
+            context.response.sendBody(result);
+            context.response.finish();
+        }
+    );
+};
 
-rowan.createRowanServer(root_controller).listen(8080);
+// Create a mapping from urls to controllers.
+var urls = [
+    {pattern:/^foo\//, view:display_foo}
+];
+
+// Build the controller tree.
+var router = rowan.controllers.router(urls);
+var root = rowan.controllers.error_handler([500], router);
+
+// Create and run the server.
+rowan.createRowanServer(root).listen(8080);
 sys.puts('Server running at http://127.0.0.1:8080/')
