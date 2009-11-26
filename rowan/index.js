@@ -14,13 +14,8 @@ var http = require('http');
 // Expose sub-modules
 exports.controllers = require('./controllers');
 exports.template = require('./template');
-exports.core = {
-    errors: require('./core/errors')
-};
-exports.information = {
-    mime_types: require('./information/mime_types'),
-    http_codes: require('./information/http_codes')
-};
+exports.core = require('./core');
+exports.information = require('./information');
 
 /**
  * Builds and returns a HTTP server. This doesn't call the server. To
