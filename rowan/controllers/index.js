@@ -13,6 +13,9 @@
  */
 var errors = require('../core/errors');
 
+// Include sub-modules.
+exports.serve_file = require('./serve_file');
+
 /**
  * A router holds any number of child controllers along with a regular
  * expression that should match their uri. The router tries to match
@@ -21,7 +24,7 @@ var errors = require('../core/errors');
  */
 exports.router = function(routes) {
     var fn = function(context) {
-        var path = context.unprocessed_path;
+        var path = context.remaining_path;
         for (i in routes) {
             var route = routes[i];
             var match = route.pattern.exec(path)
@@ -35,7 +38,7 @@ exports.router = function(routes) {
                 }
 
                 // Update the unprocessed path.
-                context.unprocessed_path = 
+                context.remaining_path = 
                     path.substr(match.index + match[0].length);
 
                 // Call the view.

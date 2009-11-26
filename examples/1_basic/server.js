@@ -21,7 +21,8 @@ var display_foo = function (context) {
 
 // Create a mapping from urls to controllers.
 var urls = [
-    {pattern:/^foo\//, view:display_foo}
+    {pattern:/^foo\//, view:display_foo},
+    {pattern:/^media\//, view:rowan.controllers.serve_file.serve('media/')}
 ];
 
 // Build the controller tree.

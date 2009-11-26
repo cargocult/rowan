@@ -4,18 +4,21 @@
     <meta name="copyright" content="Copyright (c) 2009 Ian Millington." />
   </head>
   <body>
-  
-    <h1>This is the Foo View</h1>
+    <div style="position: absolute">
+      <img src="/media/img/tree.png" />
+    </div>
 
-    <h2>Here is the title data: {{title}}.</h2>
-
-    <h3>And here is a list iteration:</h3>
-
-    <ul>
-      {% for (i in items) { var item = items[i]; %}
-      <li>{{item}}</li>
-      {% } /* for */ %}
-    </ul>
+    <div style="margin-left: 220px">
+      <h1>This is the Foo View</h1>
+      
+      <h2>Here is the title data: {{title}}.</h2>
+      
+      <h3>And here is a list iteration:</h3>
+      
+      <ul>{% for (i in items) { var item = items[i]; %}
+        <li>{{item}}</li>{% } /* for */ %}
+      </ul>
+    </div>
  </body>
 </html>
 

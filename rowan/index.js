@@ -38,7 +38,7 @@ exports.createRowanServer = function (root_controller, options) {
         var context = {
             request:request, 
             response:response, 
-            unprocessed_path:path
+            remaining_path:path
         };
         try {
             root_controller(context);

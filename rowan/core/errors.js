@@ -25,7 +25,7 @@ exports.Http401 = Http404 = function(description) {
     HttpError.apply(this, [401, description]);
 };
 
-/** A 'Forbitten' error. */
+/** A 'Forbidden' error. */
 exports.Http403 = Http405 = function(description) {
     HttpError.apply(this, [403, description]);
 };
