@@ -32,15 +32,15 @@ exports.serve = function(base_location) {
         // Build the full path and content type.
         var match = file_extension_regex.exec(path);
         if (!match) {
-            // Make sure we've not got a directory.
             throw errors.Http404();
         }
         var extension = match[1];
         var mime_type = mime_types.for_extension(extension);
         var encoding = (mime_type.substr(0, 4) == 'text')?"utf8":"binary";
         path = base_location + path;
-        
+
         // Load and send the file (TODO: Make this a streaming operation).
+        var our_promise = new process.Promise();
         var cat_promise = posix.cat(path, encoding);
         cat_promise.addCallback(function (file_data) {
             context.response.sendHeader(200, {
@@ -49,10 +49,13 @@ exports.serve = function(base_location) {
             });
             context.response.sendBody(file_data, encoding);
             context.response.finish();
+
+            our_promise.emitSuccess();
         });
         cat_promise.addErrback(function () {
-            throw errors.Http404();
+            our_promise.emitError(new errors.Http404());
         });
+        return our_promise;
     };
     return fn;
 };

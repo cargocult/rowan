@@ -14,7 +14,7 @@ var http = require('http');
 // Expose sub-modules
 exports.controllers = require('./controllers');
 exports.template = require('./template');
-exports.core = require('./core');
+exports.core = core = require('./core');
 exports.information = require('./information');
 
 /**
@@ -34,6 +34,14 @@ exports.createRowanServer = function (root_controller, options) {
         // The unprocessed path should exclude the starting slash.
         var path = request.uri.path.substr(1); 
         
+        // A simple inner function for generating a server error.
+        var report_error = function (err) {
+            response.sendHeader(500, {'Context-Type':'text/html'});
+            response.sendBody("<h1>500 Server Error</h1>");
+            response.finish();
+            if (opts.crash_on_error) throw err;
+        };
+
         // Build the initial context data and call the root controller.
         var context = {
             request:request, 
@@ -41,13 +49,23 @@ exports.createRowanServer = function (root_controller, options) {
             remaining_path:path
         };
         try {
-            root_controller(context);
+            var promise = root_controller(context);
         } catch (err) {
-            response.sendHeader(500, {'Context-Type':'text/html'});
-            response.sendBody("<h1>500 Server Error</h1>");
-            response.finish();
+            return report_error(err);
+        }
 
-            if (opts.crash_on_error) throw err;
+        // A sanity check function if we haven't sent a response and we've got
+        // no promise pending, then we need to send an error.
+        var ensure_finish = function () {
+            if (!response.finished) {
+                report_error(new core.errors.HttpError(504));
+            }
+        };
+        if (promise) {
+            promise.addErrback(report_error);
+            promise.addCallback(ensure_finish);
+        } else {
+            ensure_finish();
         }
     });
 };
