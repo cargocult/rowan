@@ -36,27 +36,37 @@ exports.flush_cache = function () {
  * Loads a template from the given template path. The loading is done
  * asynchronously, so this function takes a callback function. The
  * callback takes two params, the first is the error (if any), the
+ * second is the loaded template object (on success). Each time you
+ * ask to load a template, it is reloaded from scratch. Normally you
+ * want to use the get() method, below, which will return the template
+ * from the cache. A call to load() updates, but does not query the
+ * cache.
+ */
+exports.load = load = function(template_path, callback) {
+    fs.readFile(template_path, function (err, content) {
+        if (err) callback(err);
+        else {
+            // Place it in the cache before returning.
+            template = compile(content);
+            template_cache[template_path] = template;
+            callback(null, template);
+        }
+    });
+};
+
+/**
+ * Loads a template from the given template path. The loading is done
+ * asynchronously, so this function takes a callback function. The
+ * callback takes two params, the first is the error (if any), the
  * second is the loaded template object (on success). This function
  * also caches templates so they aren't recompiled each time they are
  * used.
  */
-exports.load = load = function(template_path, callback) {
-    // Pull the template from the cache and return success.
+exports.get = get = function(template_path, callback) {
+    // Pull the template from the cache if we can, otherwise load it.
     var template = template_cache[template_path];
     if (template) callback(null, template);
-    
-    else {
-        // We'll have to load it afresh.
-        fs.readFile(template_path, function (err, content) {
-            if (err) callback(err);
-            else {
-                // Place it in the cache before returning.
-                template = compile(content);
-                template_cache[template_path] = template;
-                callback(null, template);
-            }
-        });
-    }
+    else load(template_path, callback);
 };
 
 /**
@@ -65,20 +75,19 @@ exports.load = load = function(template_path, callback) {
  * function of two args: an error, or the rendered template.
  */
 exports.render = function(template_path, data, callback) {
-    load(template_path, function (err, template) {
+    get(template_path, function (err, template) {
         if (err) callback(err);
-        else {
-            callback(null, template(data));
-        }
+        else callback(null, template(data));
     });
 };
 
 /**
- * Compiles the given template text into a template function. This
- * can be used to build a template from an explicit string. A more common
- * use-case is to load the template from disk using the load()
- * function. This function synchronously returns the compiled template,
- * which can have data merged with it by calling it with an object of data.
+ * Compiles the given template text into a template function. This can
+ * be used to build a template from an explicit string. A more common
+ * use-case is to load the template from disk or the cache using the
+ * get() function. This function synchronously returns the compiled
+ * template, which can have data merged with it by calling it with an
+ * object of data.
  */
 exports.compile = compile = function(template_text) {
     // Create the source for our template function from the template text
