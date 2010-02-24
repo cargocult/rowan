@@ -10,9 +10,9 @@ var sys = require('sys');
 var http_codes = require('../information/http_codes');
 
 /**
- * Creates a new error object for throwing when a controller can't complete
- * its responsibility. Some sub-classes for specific http response codes are 
- * also provided.
+ * Creates a new error object for returning when a controller can't
+ * complete its responsibility. Some sub-classes for specific http
+ * response codes are also provided.
  */
 exports.HttpError = HttpError = function(status_code, description, headers) {
     this.status_code = status_code;

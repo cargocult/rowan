@@ -6,7 +6,7 @@
  * Part of the Rowan Microframework.
  * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
-var posix = require('posix');
+var fs = require('fs');
 
 var errors = require('../core/errors');
 var mime_types = require('../information/mime_types');
@@ -16,46 +16,45 @@ var mime_types = require('../information/mime_types');
  * When you create the controller you need to specify the path it will serve
  * from.
  */
-exports.serve = function(base_location) {
+exports.create_file_server = function(base_location) {
     if (base_location.substr(base_location.length-1) != '/') {
         base_location += '/';
     }
 
-    return function(context) {
+    return function(context, callback) {
         var path = context.remaining_path;
 
         // Make sure we've got no directory traversals in the path
         if (traversal_regex.test(path)) {
-            throw errors.Http403();
+            callback(new errors.Http403());
         }
 
         // Build the full path and content type.
         var match = file_extension_regex.exec(path);
         if (!match) {
-            throw errors.Http404();
+            callback(new errors.Http404());
         }
         var extension = match[1];
         var mime_type = mime_types.for_extension(extension);
         var encoding = (mime_type.substr(0, 4) == 'text')?"utf8":"binary";
         path = base_location + path;
 
-        // Load and send the file (TODO: Make this a streaming operation).
-        var our_promise = new process.Promise();
-        var cat_promise = posix.cat(path, encoding);
-        cat_promise.addCallback(function (file_data) {
-            context.response.sendHeader(200, {
-                'Content-Type': mime_type,
-                'Content-Length': file_data.length
-            });
-            context.response.sendBody(file_data, encoding);
-            context.response.finish();
-
-            our_promise.emitSuccess();
+        // Load and send the file.
+        fs.readFile(path, encoding, function (err, file_data) {
+            if (err) {
+                var err = new errors.Http404();
+                err.information = err.toString();
+                callback(err);
+            } else {
+                context.response.writeHeader(200, {
+                    'Content-Type': mime_type,
+                    'Content-Length': file_data.length
+                });
+                context.response.write(file_data, encoding);
+                context.response.close();
+                callback(null);
+            }
         });
-        cat_promise.addErrback(function () {
-            our_promise.emitError(new errors.Http404());
-        });
-        return our_promise;
     };
 };
 var file_extension_regex = /.*(\.\w+)$/;

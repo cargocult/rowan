@@ -1,15 +1,22 @@
 Rowan Framework
 
 
-Rowan is a simple Microframework for node.js.
+Rowan is a simple Microframework for node.js (currently targetting
+0.30.1).
 
 It is designed as a modular and hierarchical microframework.
 
 Each controller in the hierarchy has the same structure: it takes a
 context object that contains both the Node.js request and response
-objects. It can either write to the response object, or it can throw
-an error to indicate somthing has gone wrong. These controllers are
-composed into a tree structure.
+objects and a callback function that it notifies when it is done. 
+
+It can optionally write its content to the response object in the
+context. Then, when it is done (or when something goes wrong) it calls
+the callback function, passing in any error.
+
+Controllers are composed into a tree structure, making it very easy to
+customize the behavior of whole chunks of a site and to implement
+fall-over behavior, security wrappers, authentication, and so on.
 
 Branches in the tree might dispatch a request based on a URL, for
 example, or might have a fallback in case their preferred child node
@@ -34,6 +41,9 @@ have added a simple templating system. Possibly too simple!
 
 I am using this microframework as the glue in an SOA project,
 integrating with conventional servers, databases and CouchDB.
+
+It has been updated to work with Node 0.30.1 (and is considerably
+simpler as a result), removing its former reliance on promises.
 
 Get in touch with any observations or questions.
 

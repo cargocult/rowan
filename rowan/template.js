@@ -20,7 +20,7 @@
  */
 
 var sys = require('sys');
-var posix = require('posix');
+var fs = require('fs');
 var core = require('./core');
 
 var template_cache = {};
@@ -34,58 +34,49 @@ exports.flush_cache = function () {
 
 /**
  * Loads a template from the given template path. The loading is done
- * asynchronously, so this function returns a promise rather than 
- * the template. This function also caches templates so they aren't
- * recompiled each time they are used.
+ * asynchronously, so this function takes a callback function. The
+ * callback takes two params, the first is the error (if any), the
+ * second is the loaded template object (on success). This function
+ * also caches templates so they aren't recompiled each time they are
+ * used.
  */
-exports.load_template = load_template = function(template_path) {
-    var promise = new process.Promise();
-
-    // Pull the template from the cache.
+exports.load = load = function(template_path, callback) {
+    // Pull the template from the cache and return success.
     var template = template_cache[template_path];
-    if (template) {
-        // We can't emit success immediately, because the code that
-        // called us hasn't had time to register its interest yet, so
-        // we delay the minimum ammount of time for the event loop to 
-        // resume.
-        setTimeout(function () {promise.emitSuccess(template)}, 0);
-    }
+    if (template) callback(null, template);
     
     else {
-        // We'll have to load it afresh (hence the promise)
-        posix.cat(template_path).addCallback(function (content) {
-            template = compile(content);
-            template_cache[template_path] = template;
-            promise.emitSuccess(template);
-        }).addErrback(function () {
-            promise.emitError();
+        // We'll have to load it afresh.
+        fs.readFile(template_path, function (err, content) {
+            if (err) callback(err);
+            else {
+                // Place it in the cache before returning.
+                template = compile(content);
+                template_cache[template_path] = template;
+                callback(null, template);
+            }
         });
     }
-
-    return promise;
 };
 
 /**
  * Loads the given template and renders it on the given data. Because
- * template loading is asynchronous, this function returns a promise
- * rather than the rendered data.
+ * template loading is asynchronous, this function takes a callback
+ * function of two args: an error, or the rendered template.
  */
-exports.render_template = function(template_path, data) {
-    var promise = new process.Promise();
-
-    load_template(template_path).addCallback(function (template) {
-        promise.emitSuccess(template(data));
-    }).addErrback(function () {
-        promise.emitError();
+exports.render = function(template_path, data, callback) {
+    load(template_path, function (err, template) {
+        if (err) callback(err);
+        else {
+            callback(null, template(data));
+        }
     });
-
-    return promise;
 };
 
 /**
  * Compiles the given template text into a template function. This
  * can be used to build a template from an explicit string. A more common
- * use-case is to load the template from disk using the load_template()
+ * use-case is to load the template from disk using the load()
  * function. This function synchronously returns the compiled template,
  * which can have data merged with it by calling it with an object of data.
  */
