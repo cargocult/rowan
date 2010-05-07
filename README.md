@@ -89,8 +89,7 @@ The illustration below shows the structure of a web-site with its own
 API. It shows the way these simple components can work together to
 build a complex strucutre.
 
-<img src="http://idmillington.github.com/rowan/media/img/rowan-dispatch.png"
-     alt="An example rowan structure">
+<img src="http://idmillington.github.com/rowan/media/img/rowan-dispatch.png" alt="An example rowan structure">
 
 The first controller in the tree determines from the URL whether the
 request is part of the human readable site or an API request. If it is
