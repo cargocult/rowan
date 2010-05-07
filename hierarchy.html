@@ -1,0 +1,165 @@
+<html>
+  <head>
+    <title>Rowan: A Microframework for Node.js &mdash; Hierarchical Frameworks</title>
+    <link rel="stylesheet" href="media/css/960.css" type="text/css" />
+    <link rel="stylesheet" href="media/css/main.css" type="text/css" />
+  </Head>
+  <body>
+    <div class="container_11">
+      <div class="grid_4 logo">
+        <a href="index.html">
+          <img src="media/img/logo.png"
+               alt="Rowan: A Microframework for Node" />
+        </a>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_9 Suffix_1">
+        <h1>Why a Hierarchical Framework?</h1>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7 suffix_3">
+        <p>
+          Web frameworks are built around the architectural pattern of
+          the dispatcher. A dispatcher is a piece of code that looks at
+          a message (in the web case, an incoming HTTP request) and
+          sends it off to some piece of code for processing. Using a
+          dispatch based system makes it easy to modularize your web
+          app. And that should reduce your maintenance burden, make new
+          features easier to add, and make your code more reusable.
+        </p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7">
+        <img class="flowchart"
+             src="media/img/traditional-framework-dispatch.png"
+             alt="A typical fixed dispatch logic for a framework."/>
+      </div>
+      <div class="grid_2 suffix_1 caption">
+        <h3>Figure 1</h3>
+        <p>A typical fixed dispatch logic for a traditional
+        framework. The order for the different dispatch actions are
+        fixed (though they vary from framework to framework).</p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7 suffix_3">
+        <P>
+          There are a couple of criteria that are commonly used to
+          dispatch requests. The most common is the URL. You create a
+          list of URLs (often regular expressions for those frameworks
+          inspired by Django), and if an incoming request matches one of
+          those URLs, the framework asks a corresponding piece of code
+          to generate a response.
+        </p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7">
+        <img class="flowchart"
+             src="media/img/django-dispatch.png"
+             alt="The Django dispatcher."/>
+      </div>
+      <div class="grid_2 suffix_1 caption">
+        <h3>Figure 2</h3>
+        <p>Django focuses on dispatching by URL, HTTP method
+        dispatching is left to the developer, and other kinds of
+        dispatching are combined into its 'middleware' layer.</p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7 suffix_3">
+        <p>
+          A second important criteria is the HTTP method (e.g. POST, GET
+          or PUT). Some frameworks, notably those inspired by Ruby's
+          Sinatra, support this by default too. It is essential if you
+          want your framework to be able to support RESTful webservices
+          as well as just HTML web-sites.
+        </p>
+       </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7">
+        <img class="flowchart"
+             src="media/img/sinatra-dispatch.png"
+             alt="The dispatch logic for Sinatra."/>
+      </div>
+      <div class="grid_2 suffix_1 caption">
+        <h3>Figure 3</h3>
+        <p>Sinatra dispatches on both HTTP method and URL pattern, in
+        the same dispatch routine. Other kinds of dispatching, and
+        more complex dispatching logic and left to the developer.</p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7 suffix_3">
+        <p>
+          But there are other criteria too: sometimes you need different
+          behavior based on the HTTP Headers you receive. You may want
+          to respond to Cache-Control data, or look at the values in a
+          Cookie before responding, or dispatch based on the
+          Accept-Language codes that the client can read, or on the
+          User-Agent that hints at their browser's capabilities.
+        </p>
+        <p>
+          Each framework typically chooses a fixed structure for these
+          dispatches. Normally they force you to dispatch on URL first,
+          then (for those frameworks that support it) on HTTP
+          method. Some frameworks, to compensate for the woeful lack of
+          flexibility this provides, then wrap the whole system in a
+          completely separate mechanism so you can alter the dispatching
+          logic if you need to dispatch on another criteria. Django's
+          caching middleware works this way, for example, but it only
+          serves to confuse the fact that, actually, it is performing a
+          dispatch service based on HTTP header.
+        </p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7">
+        <img class="flowchart"
+             src="media/img/rowan-dispatch.png"
+             alt="Rowan allows any kind of dispatch configuration."/>
+      </div>
+      <div class="grid_2 suffix_1 caption">
+        <h3>Figure 4</h3>
+        <p>
+          Rowan supports any kind of dispatching logic, and allows
+          developers to build up a hierarchical structure that makes
+          sense in the context of their site. It is possible to do
+          broad dispatching at one level, then finer grained
+          dispatching later.
+        </p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_7 suffix_3">
+        <p>
+          A Hierarchical Framework is different, and better
+          engineered. It provides a set of dispatchers that can be
+          combined in any way you choose, hierarchically. So you can
+          first check for matching URLs, then for some of those URLs,
+          further refine your dispatch based on HTTP method. Or you can
+          first distinguish based on cache information, and return early
+          if possible, then defer matching URLs for those requests that
+          fail the cache look-up. Or you can first split by HTTP method,
+          and only later determine what resource the user is accessing
+          or altering. In short, a hierarchical framework makes the
+          dispatcher part of the toolkit, to be used and configured
+          however you like.
+        </p>
+      </div>
+
+      <div class="clear"></div>
+      <div class="prefix_1 grid_9 suffix_1 legal">
+        <p>&copy; 2009-2010 Ian Millington.</p>
+      </div>
+    </div>
+    <a href="http://github.com/idmillington/rowan">
+      <img style="position: absolute; top: 0; right: 0; border: 0;" 
+           src="http://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" 
+           alt="Fork me on GitHub" /></a>
+  </body>
+</html>

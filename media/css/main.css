@@ -1,0 +1,72 @@
+body {
+    font: 90%/1.6 sans-serif;
+    margin: 1.5em;
+    background-color: #fcfff6;
+}
+
+p {
+    margin: 0;
+}
+p + p {
+    text-indent: 1.6em;
+}
+p:first-child {
+    margin-top: 0.5em;
+}
+p:last-child {
+    margin-bottom: 0.25em;
+}
+
+div.content {
+    width: 760px;
+    height
+}
+
+div.logo {
+    height: 75px;
+}
+
+div.legal p {
+    padding: 2em 0;
+    font-size: 80%;
+}
+
+h1 {
+    color: #360;
+    font-size: 3em;
+    font-weight: normal;
+    margin: 0.5em 0 0 0;
+}
+
+div.caption {
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+div.caption h3 {
+    font-size: 1em;
+    color: #360;
+    font-weight: bold;
+    font-style: italic;
+    margin: 0 0 0.5em 0;
+}
+
+div.pullquote p {
+    line-height: 0.95;
+    color: #360;
+    font-size: 1.75em;
+    font-style: italic;
+    margin: 0.5em 0;
+}
+
+div.noh1 {
+    margin-top: 3em;
+}
+
+a img {
+    border: none;
+}
+
+a {
+    color: #690;
+}
