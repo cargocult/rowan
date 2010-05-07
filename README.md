@@ -1,27 +1,33 @@
 Rowan Framework
 ===============
 
-Rowan is a simple Microframework for node.js (currently targetting
-0.1.94).
+**Rowan** is a **Hierarchical Microframework** for **node**.
+(currently targetting 0.1.94: ry/node@f711d5343b29d1e72e87107315708e40951a7826)
 
-It is designed as a modular and hierarchical microframework.
 
 What is a Hierarchical Framework?
 ---------------------------------
 
-Web frameworks are built around *dispatchers*. A dispatcher is a piece
-of code that looks at an incoming request and sends it off to some
-piece of code for processing. Using a dispatch based model makes it
-easy to modularize your web app.
+Web frameworks are built around the architectural pattern of the
+*dispatcher*. A dispatcher is a piece of code that looks at a message
+(in the web case, an incoming HTTP request) and sends it off to some
+piece of code for processing. Using a dispatch based system makes it
+easy to modularize your web app. And that should reduce your
+maintenance burden, make new features easier to add, and make your
+code more reusable.
 
 There are a couple of criteria that are commonly used to dispatch
 requests. The most common is the *URL*. You create a list of URLs
 (often regular expressions for those frameworks inspired by Django
 [http://djangoproject.com/]), and if an incoming request matches one
 of those URLs, the framework asks a corresponding piece of code to
-generate a response. A second important criteria is the *HTTP method*
-(e.g. POST, GET or PUT). Some frameworks, notably those inspired by
-Ruby's Sinatra (http://sinatra.github.com/).
+generate a response.
+
+A second important criteria is the *HTTP method* (e.g. POST, GET or
+PUT). Some frameworks, notably those inspired by Ruby's Sinatra
+(http://sinatra.github.com/) support this by default too. It is
+essential if you want your framework to be able to support RESTful
+webservices as well as just HTML web-sites.
 
 But there are other criteria too: sometimes you need different
 behavior based on the *HTTP Headers* you receive. You may want to
