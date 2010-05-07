@@ -2,7 +2,7 @@ Rowan Framework
 ===============
 
 **Rowan** is a **Hierarchical Microframework** for **node**.
-(currently targetting 0.1.94: ry/node@f711d5343b29d1e72e87107315708e40951a7826)
+(currently targetting [0.1.94](http://github.com/ry/node/commits/v0.1.94))
 
 
 What is a Hierarchical Framework?
@@ -18,14 +18,14 @@ code more reusable.
 
 There are a couple of criteria that are commonly used to dispatch
 requests. The most common is the *URL*. You create a list of URLs
-(often regular expressions for those frameworks inspired by Django
-[http://djangoproject.com/]), and if an incoming request matches one
-of those URLs, the framework asks a corresponding piece of code to
-generate a response.
+(often regular expressions for those frameworks inspired by
+[Django](http://djangoproject.com/)), and if an incoming request
+matches one of those URLs, the framework asks a corresponding piece of
+code to generate a response.
 
 A second important criteria is the *HTTP method* (e.g. POST, GET or
-PUT). Some frameworks, notably those inspired by Ruby's Sinatra
-(http://sinatra.github.com/) support this by default too. It is
+PUT). Some frameworks, notably those inspired by Ruby's
+[Sinatra](http://sinatra.github.com/) support this by default too. It is
 essential if you want your framework to be able to support RESTful
 webservices as well as just HTML web-sites.
 
