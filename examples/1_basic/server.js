@@ -1,7 +1,7 @@
 /**
  * This example shows a fairly minimal, but typical structure for a Rowan
  * project. It exposes three URLs:
- * 
+ *
  * /foo/ - This shows a very simple templated output, merging in a set
  *         of static data.
  *
@@ -49,7 +49,7 @@ var controllers = rowan.controllers;
 
 // A controller that shows how to render something to a template.
 var display_foo = controllers.shortcuts.create_template_renderer(
-    'templates/index.html', 
+    'templates/index.html',
     {title:'Hello World', items:['a', 'b', 'c']}
 );
 
@@ -61,7 +61,7 @@ var display_bar = controllers.create_fallback([
         if (/sesame/.test(context.remaining_path)) {
             context.response.writeHeader(200, {'Content-Type':'text/plain'});
             context.response.write("Opening...");
-            context.response.close();
+            context.response.end();
             callback(null);
         } else {
             // If there's no magic word, we send and error, so the
@@ -80,15 +80,15 @@ var display_bar = controllers.create_fallback([
 // The URI fragments at the top level and the controllers they map to.
 var router = controllers.create_router([
     {
-        pattern:/^foo\/$/, 
+        pattern:/^foo\/$/,
         view:display_foo
     },
     {
-        pattern:/^bar\//, 
+        pattern:/^bar\//,
         view:display_bar
     },
     {
-        pattern:/^media\//,   
+        pattern:/^media\//,
         view:controllers.serve_file.create_file_server('media/')
     }
 ]);

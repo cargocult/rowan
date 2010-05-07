@@ -13,7 +13,7 @@ response_util = function (context, callback, content, content_type) {
         content_type = content_type || 'text/plain';
         context.response.writeHeader(200, {'Content-Type': content_type});
         context.response.write(content);
-        context.response.close();
+        context.response.end();
         callback(null);
     };
 
@@ -23,19 +23,19 @@ response_util = function (context, callback, content, content_type) {
  */
 exports.create_static_content = function (content, content_type) {
     return function (context, callback) {
-        response_util(context, callback, content, content_type); 
+        response_util(context, callback, content, content_type);
     };
 };
 
-/** 
- * A controller that merges a pre-specified set of data into a template. 
+/**
+ * A controller that merges a pre-specified set of data into a template.
  * The content type defaults to text/html.
- * 
+ *
  * Note that the data is only merged into the template when the generated
  * controller is actually called, so while the data object itself can't
  * change, its contents can.
  */
-exports.create_template_renderer = 
+exports.create_template_renderer =
     function (template_name, data_object, content_type, query_cache) {
         if (query_cache === null) {
             query_cache = true;

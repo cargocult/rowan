@@ -23,8 +23,9 @@ exports.information = require('./information');
  * start the server call its listen() method.
  */
 exports.create_rowan_server = function (root_controller, options) {
+    // Shallow copy explicit options, overriding defaults.
     var opts = {crash_on_error:true};
-    process.mixin(opts, options);
+    for (var key in options) opts[key] = options[key];
 
     return http.createServer(function (request, response) {
 
@@ -32,24 +33,25 @@ exports.create_rowan_server = function (root_controller, options) {
             '['+(new Date()).toString()+'] "'+
                 request.method+' '+request.url+
                 ' HTTP/'+request.httpVersion+'"');
-        
+
         // The unprocessed path should exclude the starting slash.
         var url_data = url.parse(request.url);
-        var path = url_data.pathname.substr(1); 
-        
+        var path = url_data.pathname.substr(1);
+
         // A simple inner function for generating a server error.
         var report_error = function (err) {
-            response.writeHeader(err.status_code, {'Context-Type':'text/html'});
-            response.write("<h1>"+err.status_code+" "+err.description+"</h1>");
+            var err_code = err.status_code;
+            response.writeHeader(err_code, {'Context-Type':'text/html'});
+            response.write("<h1>"+err_code+" "+err.description+"</h1>");
             if (err.information) response.write(err.information);
-            response.close();
+            response.end();
             if (opts.crash_on_error) throw err;
         };
 
         // Build the initial context data and call the root controller.
         var context = {
-            request:request, 
-            response:response, 
+            request:request,
+            response:response,
             remaining_path:path
         };
         root_controller(context, function(err) {
@@ -62,7 +64,7 @@ exports.create_rowan_server = function (root_controller, options) {
                     http_error.information = err.toString();
                     report_error(http_error);
                 }
-            } 
+            }
 
             // Do a sanity check to see if we've finished our response.
             if (!response.finished) {

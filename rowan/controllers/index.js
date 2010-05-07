@@ -1,10 +1,10 @@
 /**
  * This module supports the Rowan tree structure of elements in a web
  * application. The tree is made up of `controllers' that are
- * functions which can be called with two arguments: 
+ * functions which can be called with two arguments:
  *
  * `context' encapsulates all the information about the request being
- * made and the response that should be generated. 
+ * made and the response that should be generated.
  *
  * `callback' should be called *in all cases* from the controller,
  * when the controller has completed processing. The callback takes at
@@ -50,7 +50,7 @@ exports.create_router = function(routes) {
                 }
 
                 // Update the unprocessed path.
-                context.remaining_path = 
+                context.remaining_path =
                     path.substr(match.index + match[0].length);
 
                 // Call the view.
@@ -108,7 +108,7 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
             response.write(
                 "<h1>"+status_code.toString()+" "+description+"</h1>"
             );
-            response.close();
+            response.end();
             return true;
         } else {
             return false;
@@ -141,7 +141,7 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
  * up. If no controllers are given, a Http 404 error is called-back.
  *
  * This function recurses through the sub-controllers in order, rather
- * than iterating through them. Because Javascript doesn't support 
+ * than iterating through them. Because Javascript doesn't support
  * tail-calls, huge numbers of sub-controllers may cause a stack-overflow.
  * Instead split the fallbacks into a tree, with only a couple of hundred
  * controllers per fallback.
@@ -152,7 +152,7 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
         sub_controllers = valid_errors;
         valid_errors = null;
     }
-    
+
     // Can this error be handled or does it need escalating?
     var handle_error = function(err) {
         return !valid_errors || valid_errors.indexOf(err.status_code) >= 0;
@@ -163,7 +163,7 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
         var sub_controllers_copy = sub_controllers.slice();
 
         // The recursive function that tries to use one sub-controller and
-        // recurses to further sub-controllers if it fails. 
+        // recurses to further sub-controllers if it fails.
         var process_controller = function(index) {
             var sub_controller = sub_controllers_copy[index];
 
@@ -186,11 +186,11 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
             });
         };
 
-        // Start by trying the base controller, and let it recurse from 
+        // Start by trying the base controller, and let it recurse from
         // there.
         if (sub_controllers_copy) process_controller(0);
         else callback(new errors.Http404());
-    };   
+    };
     return fn;
 };
 

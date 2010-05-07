@@ -1,8 +1,8 @@
 /**
- * This module provides a simple templating system for Rowan using 
+ * This module provides a simple templating system for Rowan using
  * Javascript's eval() to run code interleaved with the template.
  * The syntax is inspired by Django / Jinja - double curly braces
- * indicate a variable (something that will evaluate to a value), 
+ * indicate a variable (something that will evaluate to a value),
  * and {% ... %} indicates something more complex - in our case a chunk
  * of javascript code.
  *
@@ -10,8 +10,8 @@
  * of data. The properties in that object are the names that the template
  * can refer to.
  *
- * H/T: The micro-templating approach used in this code was inspired by 
- * a blog post by John Resig at 
+ * H/T: The micro-templating approach used in this code was inspired by
+ * a blog post by John Resig at
  * http://ejohn.org/blog/javascript-micro-templating/
  */
 /*
@@ -47,7 +47,7 @@ exports.load = load = function(template_path, callback) {
         if (err) callback(err);
         else {
             // Place it in the cache before returning.
-            template = compile(content);
+            template = compile(content.toString());
             template_cache[template_path] = template;
             callback(null, template);
         }
@@ -97,19 +97,19 @@ exports.compile = compile = function(template_text) {
 
         // Convert the special tag characters into code.
         template_text
-            .split('\r').join("\\r") // We can't split strings across lines 
-            .split('\n').join("\\n") 
+            .split('\r').join("\\r") // We can't split strings across lines
+            .split('\n').join("\\n")
             .split("'").join("\\'") // We need single quotes, so escape them
             .replace(/{{(.*?)}}/g, "',$1,'") // Regular tags are just data
             .split("{%").join("');") // Range open tags end a JS statement
             .split("%}").join("; output.push('") // And close tags open one
 
         + "');} return output.join('');";
-    
+
     try {
         return new Function("data", source);
     } catch (err) {
         sys.puts("Compiled template source >>>\n" + source + "\n<<<");
     }
 };
- 
+

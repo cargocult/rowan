@@ -51,7 +51,7 @@ exports.create_file_server = function(base_location) {
                     'Content-Length': file_data.length
                 });
                 context.response.write(file_data, encoding);
-                context.response.close();
+                context.response.end();
                 callback(null);
             }
         });
