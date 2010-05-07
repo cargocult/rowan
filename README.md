@@ -83,14 +83,13 @@ Controllers are composed into a tree structure, making it very easy to
 customize the behavior of whole chunks of a site and to implement
 fall-over behavior, security wrappers, authentication, and so on.
 
-An Example Rowan Structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+## An Example Rowan Structure
 
 The illustration below shows the structure of a web-site with its own
 API. It shows the way these simple components can work together to
 build a complex strucutre.
 
-<img src="http://idmillington.github.com/rowan/media/img/rowan-dispatch.png" alt="An example rowan structure" style='padding:8px border:1px solid grey; float:left'>
+<img src="http://idmillington.github.com/rowan/media/img/rowan-dispatch.png" alt="An example rowan structure" style='padding:8px; border:1px solid grey; float:left'>
 
 The first controller in the tree determines from the URL whether the
 request is part of the human readable site or an API request. If it is
@@ -109,8 +108,7 @@ called. This illustrates a feature of Rowan - its trees can merge as
 well as diverge (strictly, the tree is actually a directed graph, and
 usually you want it to be acyclic).
 
-Working with Rowan
-~~~~~~~~~~~~
+## Working with Rowan
 
 Don't let the tree structure intimidate you. Often, the trees can be
 relatively flat. They might have an `error_handler` node at their root
@@ -130,7 +128,7 @@ of other applications, composed in any way you choose.
 
 
 Acknowledgments
-----------------
+---------------
 
 The code is based on my Python/WSGI Rowan framework code (on github at
 http://github.com/idmillington/Rowan-Python). There are two major
