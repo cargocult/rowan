@@ -89,6 +89,26 @@ problems in the tree), then a single URL `router` which forwards
 different urls to controllers that generate the correct output. This
 pattern is shown in the first example application.
 
+![An example Rowan structure](http://idmillington.github.com/rowan/media/img/rowan-dispatch.png)
+
+The illustration above shows the structure of a web-site with its own
+API. It shows the way these simple components can work together to
+build a complex strucutre. The first controller in the tree determines
+from the URL whether the request is part of the human readable site or
+an API request. If it is part of the human-readable site, an error
+handler is added that will generate a HTML formatted, helpful error
+message if something goes wrong. Then another URL router decides which
+of a series of controllers gets to respond to the user's request.
+
+If the initial router determines that the request is an API request,
+then the next controller will attempt to confirm that the user has a
+valid license key. If this succeeds another error handler catches
+further errors and the request is dispatched to the correct controller
+by its HTTP method. Notice that no matter where the source of the
+error in the API section of the site, the same error handler will be
+called. This illustrates a feature of Rowan - its trees can merge as
+well as diverge (strictly, the tree is actually a directed graph, and
+usually you want it to be acyclic).
 
 Acknowledgments
 ----------------
