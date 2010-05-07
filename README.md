@@ -83,22 +83,21 @@ Controllers are composed into a tree structure, making it very easy to
 customize the behavior of whole chunks of a site and to implement
 fall-over behavior, security wrappers, authentication, and so on.
 
-Most often, the trees can be relatively flat. They might have an
-`error_handler` node at their root (which catches and reports any
-problems in the tree), then a single URL `router` which forwards
-different urls to controllers that generate the correct output. This
-pattern is shown in the first example application.
+An Example Rowan Structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-![An example Rowan structure](http://idmillington.github.com/rowan/media/img/rowan-dispatch.png)
-
-The illustration above shows the structure of a web-site with its own
+The illustration below shows the structure of a web-site with its own
 API. It shows the way these simple components can work together to
-build a complex strucutre. The first controller in the tree determines
-from the URL whether the request is part of the human readable site or
-an API request. If it is part of the human-readable site, an error
-handler is added that will generate a HTML formatted, helpful error
-message if something goes wrong. Then another URL router decides which
-of a series of controllers gets to respond to the user's request.
+build a complex strucutre.
+
+<img src="http://idmillington.github.com/rowan/media/img/rowan-dispatch.png" alt="An example rowan structure" style='padding:8px border:1px solid grey; float:left'>
+
+The first controller in the tree determines from the URL whether the
+request is part of the human readable site or an API request. If it is
+part of the human-readable site, an error handler is added that will
+generate a HTML formatted, helpful error message if something goes
+wrong. Then another URL router decides which of a series of
+controllers gets to respond to the user's request.
 
 If the initial router determines that the request is an API request,
 then the next controller will attempt to confirm that the user has a
@@ -109,6 +108,26 @@ error in the API section of the site, the same error handler will be
 called. This illustrates a feature of Rowan - its trees can merge as
 well as diverge (strictly, the tree is actually a directed graph, and
 usually you want it to be acyclic).
+
+Working with Rowan
+~~~~~~~~~~~~
+
+Don't let the tree structure intimidate you. Often, the trees can be
+relatively flat. They might have an `error_handler` node at their root
+(which catches and reports any problems in the tree), then a single
+URL `router` which forwards different urls to controllers that
+generate the correct output. This pattern is shown in the first
+example application in the repository.
+
+Often it is possible to grow your tree naturally as you develop the
+application. Initially you create just a url `router`, then later you
+add error handling, caching and other kinds of dispatch.
+
+The real beauty of Rowan is its high modularity. You can create
+reusable applications that are subtrees, and move them around between
+projects. Unlike other frameworks, you can create applications made up
+of other applications, composed in any way you choose.
+
 
 Acknowledgments
 ----------------
