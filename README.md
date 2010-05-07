@@ -1,3 +1,5 @@
+![Rowan Framework](http://idmillington.github.com/rowan/media/img/logo.png)
+
 Rowan Framework
 ===============
 
