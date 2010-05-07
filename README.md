@@ -1,8 +1,9 @@
 Rowan Framework
 ===============
 
-**Rowan** is a **Hierarchical Microframework** for **node**.
-(currently targetting [0.1.94](http://github.com/ry/node/commits/v0.1.94))
+**Rowan** is a **Hierarchical Microframework** for
+[node](http://github.com/ry/node/) (currently targetting
+[0.1.94](http://github.com/ry/node/commits/v0.1.94))
 
 
 What is a Hierarchical Framework?
@@ -25,7 +26,7 @@ code to generate a response.
 
 A second important criteria is the *HTTP method* (e.g. POST, GET or
 PUT). Some frameworks, notably those inspired by Ruby's
-[Sinatra](http://sinatra.github.com/) support this by default too. It is
+[Sinatra](http://sinatra.github.com/), support this by default too. It is
 essential if you want your framework to be able to support RESTful
 webservices as well as just HTML web-sites.
 
