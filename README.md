@@ -5,7 +5,7 @@ Rowan Framework
 
 **Rowan** is a **Hierarchical Microframework** for
 [node](http://github.com/ry/node/) (currently targetting
-[0.1.94](http://github.com/ry/node/commits/v0.1.94))
+[0.1.95](http://github.com/ry/node/commits/v0.1.95))
 
 
 What is a Hierarchical Framework?
