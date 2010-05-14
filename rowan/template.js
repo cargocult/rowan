@@ -13,6 +13,11 @@
  * H/T: The micro-templating approach used in this code was inspired by
  * a blog post by John Resig at
  * http://ejohn.org/blog/javascript-micro-templating/
+ *
+ * This approach should be considered to be a 'toy'
+ * implementation. For more general and well-supported template
+ * consider a focussed Javascript templating system, such as JSON
+ * Template.
  */
 /*
  * Part of the Rowan Microframework.
