@@ -11,7 +11,7 @@ var core = require('../core');
  */
 response_util = function (context, callback, content, content_type) {
         content_type = content_type || 'text/plain';
-        context.response.writeHeader(200, {'Content-Type': content_type});
+        context.response.writeHead(200, {'Content-Type': content_type});
         context.response.write(content);
         context.response.end();
         callback(null);

@@ -22,6 +22,10 @@ var createUUID = (function() {
     // this outmost function call is to return the actual get_uuid()
     // function which is assigned to the get_uuid name.
 
+    var UUIDError = function(message) {
+        Error.call(this, message);
+        this.name = "UUIDError";
+    };
 
     // Adjust these constants to tweak the uuid generation process.
     // This version uses the OSSP uuid program, but you could also
@@ -68,13 +72,13 @@ var createUUID = (function() {
         // Pass errors up to the spooled callbacks, these are then
         // popped, so they receive at most one error.
         uuidCall.stderr.addListener('data', function(data) {
-            notifyCallbacksOfError(new Error("uuid generation error: "+data));
+            notifyCallbacksOfError(new UUIDError("uuid process error: "+data));
         });
 
         // If we're done, call the callback with the uuid.
         uuidCall.addListener('exit', function(code) {
             if (code != 0) {
-                notifyCallbacksOfError(new Error("uuid generation failed"));
+                notifyCallbacksOfError(new UUIDError("uuid generation failed"));
             } else {
                 // Send as many UUIDs as we can.
                 while(spooledCallbacks.length > 0 & uuids.length > 0) {

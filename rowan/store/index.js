@@ -3,3 +3,4 @@
  * mechanism.  See the base.js for the interface and the memory.js
  * file for the minimal (in-memory) implementation.
  */
+exports.memory = require('./memory');

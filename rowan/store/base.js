@@ -1,5 +1,12 @@
 var sys = require('sys');
 
+// The base class object store in this file doesn't implement many of
+// its methods, so this error is thrown in each case.
+var NoImplementationError = {
+    name: "NoImplementationError",
+    message: "Base ObjectStore doesn't have implementations."
+};
+
 /**
  * The basic interface for object stores.
  *
@@ -53,9 +60,10 @@ ObjectStore.prototype.set = function(uuid, object, opts, callback) {
     // First see if the key is already in the store.
     this._get(uuid, function(err, data) {
         if (data) {
-            callback(
-                new Error("Can't set an existing uuid: update it instead.")
-            );
+            callback({
+                name: "ObjectStoreError",
+                message:"Can't set an existing uuid: update it instead."
+            });
         } else {
             opts = opts || {};
 
@@ -183,14 +191,14 @@ ObjectStore.prototype.update = function(uuid, object, opts, callback) {
  * Deletes the object associated with the given uuid in the database.
  */
 ObjectStore.prototype.remove = function(uuid, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 /**
  * Deletes everything in the data store.
  */
 ObjectStore.prototype.empty = function(callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 // Index specific methods.
@@ -200,7 +208,7 @@ ObjectStore.prototype.empty = function(callback) {
  * the index is a key, this method still returns a list.
  */
 ObjectStore.prototype.query_uuids = function(index, value, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 /**
@@ -240,35 +248,35 @@ ObjectStore.prototype.query = function(index, value, callback) {
  * Sets the raw content for a given uuid.
  */
 ObjectStore.prototype._set = function(uuid, content, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 }
 
 /**
  * Gets the raw content for a given uuid.
  */
 ObjectStore.prototype._get = function(uuid, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 }
 
 /**
  * Sets the object with the gives uuid to the given key index.
  */
 ObjectStore.prototype._set_key = function(uuid, index, value, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 /**
  * Adds the object with the given uuid to the given set index.
  */
 ObjectStore.prototype._add_to_set = function(uuid, index, value, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 /**
  * Removes the given object from the given index.
  */
 ObjectStore.prototype._rm_index = function(uuid, index, value, callback) {
-    throw new Error("Base ObjectStore doesn't have implementations.");
+    throw NoImplementationError;
 },
 
 // -----------------------------------------------------------------------

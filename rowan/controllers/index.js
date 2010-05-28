@@ -26,6 +26,7 @@ var errors = require('../core/errors');
 // Include sub-modules.
 exports.serve_file = require('./serve_file');
 exports.shortcuts = require('./shortcuts');
+exports.generic = require('./generic');
 
 /**
  * A router holds any number of child controllers along with a regular
@@ -104,7 +105,7 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
         if (!unhandled_errors || unhandled_errors.indexOf(status_code) < 0) {
             var description = error.description || "Server Error";
 
-            response.writeHeader(status_code, {'Content-Type':'text/html'});
+            response.writeHead(status_code, {'Content-Type':'text/html'});
             response.write(
                 "<h1>"+status_code.toString()+" "+description+"</h1>"
             );

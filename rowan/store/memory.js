@@ -58,7 +58,10 @@ InMemoryStore.prototype._get = function(uuid, callback) {
 InMemoryStore.prototype._set_key = function(uuid, index, value, callback) {
     var index = create_index(index, value);
     if (this.data[index]) {
-        return callback(new Error("Can't set a currently set key."));
+        return callback({
+            name:"InMemoryStoreError",
+            message:"Can't set a currently set key."
+        });
     }
     this.data[index] = uuid;
     callback(null);
@@ -82,7 +85,10 @@ InMemoryStore.prototype._rm_index = function(uuid, index, value, callback) {
         delete entry[uuid];
     } else {
         // We have nothing.
-        return callback(new Error("Can't delete a non-existent index."));
+        return callback({
+            name:"InMemoryStoreError",
+            message:"Can't delete a non-existent index."
+        });
     }
     return callback(null);
 };

@@ -43,10 +43,10 @@ exports.create_file_server = function(base_location) {
         fs.readFile(path, encoding, function (err, file_data) {
             if (err) {
                 var err = new errors.Http404();
-                err.information = err.toString();
+                err.message = err.toString();
                 callback(err);
             } else {
-                context.response.writeHeader(200, {
+                context.response.writeHead(200, {
                     'Content-Type': mime_type,
                     'Content-Length': file_data.length
                 });

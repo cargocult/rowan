@@ -1,8 +1,8 @@
 /**
- * This module provides a lookup table of human readable HTTP status code 
- * descriptions. 
+ * This module provides a lookup table of human readable HTTP status code
+ * descriptions.
  *
- * H/T: I scraped this list from the Wikipedia entry at 
+ * H/T: I scraped this list from the Wikipedia entry at
  * http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
  */
 /*

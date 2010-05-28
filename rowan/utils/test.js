@@ -12,6 +12,11 @@ var plural = function(number, text, plural_form) {
     else return number+" "+plural_form;
 };
 
+var TestError = function(message) {
+    Error.call(this, message || "");
+    this.name = "TestError";
+}
+
 /**
  * The test suite manages the execution of a series of tests. The
  * tests given should be a list of objects, each object should have
@@ -169,7 +174,7 @@ sys.inherits(TestSuite, event.EventEmitter);
  */
 TestSuite.prototype.add_tests = function(tests_to_run) {
     if (this.has_run) {
-        throw new Error("Can't add tests after they've been run.");
+        throw new TestError("Can't add tests after they've been run.");
     }
     for (var i = 0; i < tests_to_run.length; i++) {
         var test_defn = tests_to_run[i];
@@ -192,7 +197,7 @@ TestSuite.prototype.add_tests = function(tests_to_run) {
  */
 TestSuite.prototype.add_suite = function(other_suite) {
     if (this.has_run) {
-        throw new Error("Can't add tests after they've been run.");
+        throw new TestError("Can't add tests after they've been run.");
     }
     this.add_tests(other_suite.tests_to_run);
 }
@@ -302,7 +307,7 @@ function TestContext(test_defn, test_suite) {
  */
 TestContext.prototype.passed = function() {
     if (!this.test_defn.running) {
-        throw new Error("Test context has already been given a result.");
+        throw new TestError("Test context has already been given a result.");
     }
     this.suite._passed(this);
 };
@@ -311,7 +316,7 @@ TestContext.prototype.passed = function() {
  */
 TestContext.prototype.failed = function(fail_message) {
     if (!this.test_defn.running) {
-        throw new Error("Test context has already been given a result.");
+        throw new TestError("Test context has already been given a result.");
     }
     this.test_defn.fail_message = fail_message;
     this.suite._failed(this);
@@ -324,7 +329,7 @@ TestContext.prototype.error = function(error) {
         throw error;
     }
     if (!this.test_defn.running) {
-        throw new Error("Test context has already been given a result.");
+        throw new TestError("Test context has already been given a result.");
     }
     this.test_defn.error = error;
     this.suite._error(this);
@@ -352,4 +357,5 @@ var getModuleTests = function(mod, opts) {
 };
 
 exports.getModuleTests = getModuleTests;
+exports.TestError = TestError;
 exports.TestSuite = TestSuite;

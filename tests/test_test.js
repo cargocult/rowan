@@ -1,7 +1,7 @@
 /**
  * Tests for testing the unit test system itself.
  */
-var test = require("rowan/core/test");
+var rowan = require("rowan");
 
 // Build a list of tests.
 var tests = {name:"test_test.js"};
@@ -12,5 +12,5 @@ tests.testSuccess = function(context) {
 
 // ---------------------------------------------------------------------------
 exports.getTests = function() {
-    return test.getModuleTests(tests);
+    return rowan.utils.test.getModuleTests(tests);
 };

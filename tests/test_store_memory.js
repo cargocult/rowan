@@ -1,8 +1,8 @@
 /**
  * Tests for testing the in memory object store.
  */
-var test = require("rowan/core/test");
-var store = require("rowan/store/memory");
+var rowan = require("rowan");
+var ObjectStore = rowan.store.memory.ObjectStore;
 var sys = require('sys');
 
 // Build a list of tests.
@@ -10,12 +10,12 @@ var tests = {name:"test_store_memory.js"};
 
 tests.testCreateStore = function(context) {
     // Smoke-test creating a store.
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     return context.passed();
 };
 
 tests.testSetObject = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
         context.passed();
@@ -24,7 +24,7 @@ tests.testSetObject = function(context) {
 
 // Objects should be retrievable.
 tests.testGetObject = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -43,7 +43,7 @@ tests.testGetObject = function(context) {
 
 // Set only works when the object doesn't exist, other wise use update.
 tests.testCantSetAgain = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -57,7 +57,7 @@ tests.testCantSetAgain = function(context) {
 
 // Updating replaces the old object with a new object.
 tests.testUpdate = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -79,7 +79,7 @@ tests.testUpdate = function(context) {
 
 // Accessing a removed object returns null.
 tests.testRemove = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -100,7 +100,7 @@ tests.testRemove = function(context) {
 
 // Emptying removes everything
 tests.testEmpty = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:1}, null, function(err) {
         if (err) return context.error(err);
 
@@ -126,7 +126,7 @@ tests.testEmpty = function(context) {
 // All object store methods should be run with a callback, even those without
 // a return value (in case of error).
 tests.testMustHaveCallback = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     try {
         s.set("object-1", {foo:1, bar:[1,2,3]}, null, null);
     } catch(err) {
@@ -137,7 +137,7 @@ tests.testMustHaveCallback = function(context) {
 
 // The key index should be settable.
 tests.testSetIndex = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
         context.passed();
@@ -146,7 +146,7 @@ tests.testSetIndex = function(context) {
 
 // We should be able to query the uuids matching the given key index.
 tests.testQueryIndexUUIDs = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -167,7 +167,7 @@ tests.testQueryIndexUUIDs = function(context) {
 
 // When an indexed value changes, the old one should be deleted.
 tests.testUpdateIndexNewValue = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -206,7 +206,7 @@ tests.testUpdateIndexNewValue = function(context) {
 
 // When an index request changes, the old one should be deleted.
 tests.testUpdateIndexNewKey = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -245,7 +245,7 @@ tests.testUpdateIndexNewKey = function(context) {
 
 // We can index more than one thing in a set.
 tests.testSetsStoreMultiple = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
 
     var indices = {sets:{group:'group'}};
 
@@ -273,7 +273,7 @@ tests.testSetsStoreMultiple = function(context) {
 
 // We should be able to change the index for sets as well as keys.
 tests.testUpdateIndexNewSet = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
     s.set("object-1", {foo:12938}, {sets:{set1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -310,8 +310,9 @@ tests.testUpdateIndexNewSet = function(context) {
     });
 };
 
-tests.testCantReuseIndex = function(context) {
-    var s = new store.ObjectStore();
+// Each key represents a unique object, so it can't be used by another.
+tests.testCantReuseKey = function(context) {
+    var s = new ObjectStore();
 
     var indices = {keys:{key1:'foo'}};
 
@@ -329,9 +330,32 @@ tests.testCantReuseIndex = function(context) {
     });
 };
 
+// We can't bump an existing key by updating a different one.
+tests.testCantReuseKeyByUpdate = function(context) {
+    var s = new ObjectStore();
+
+    var indices = {keys:{key1:'foo'}};
+
+    s.set("object-1", {foo:12938}, indices, function(err) {
+        if (err) return context.error(err);
+
+        s.set("object-2", {foo:12238}, indices, function(err) {
+            if (err) return context.error(err);
+
+            s.set("object-1", {foo:12238}, indices, function(err) {
+                if (err) return context.passed();
+                else {
+                    return context.failed(
+                        "Should raise an error with a clashing key index."
+                    );
+                }
+            });
+        });
+    });
+};
 // A key query should return just one result.
 tests.testQueryByKey = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
 
     var indices = {keys:{key1:'foo'}};
 
@@ -366,7 +390,7 @@ tests.testQueryByKey = function(context) {
 
 // A set query may return any number of results.
 tests.testQueryBySet = function(context) {
-    var s = new store.ObjectStore();
+    var s = new ObjectStore();
 
     var indices = {sets:{group:'group'}};
 
@@ -396,5 +420,5 @@ tests.testQueryBySet = function(context) {
 
 // ---------------------------------------------------------------------------
 exports.getTests = function() {
-    return test.getModuleTests(tests);
+    return rowan.utils.test.getModuleTests(tests);
 };

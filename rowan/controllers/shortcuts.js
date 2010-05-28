@@ -9,13 +9,13 @@ var core = require('../core');
 /**
  * A utility function that responds to a request in one call.
  */
-response_util = function (context, callback, content, content_type) {
-        content_type = content_type || 'text/plain';
-        context.response.writeHeader(200, {'Content-Type': content_type});
-        context.response.write(content);
-        context.response.end();
-        callback(null);
-    };
+var response_util = function (context, callback, content, content_type) {
+    content_type = content_type || 'text/plain';
+    context.response.writeHead(200, {'Content-Type': content_type});
+    context.response.write(content);
+    context.response.end();
+    callback(null);
+};
 
 /**
  * A controller that outputs the given content verbatim. The content type
@@ -59,4 +59,4 @@ exports.create_error_generator = function (error_code, description) {
     return function (context, callback) {
         callback(new core.errors.HttpError(error_code, description));
     };
-}
+};

@@ -14,39 +14,43 @@ var http_codes = require('../information/http_codes');
  * complete its responsibility. Some sub-classes for specific http
  * response codes are also provided.
  */
-exports.HttpError = HttpError = function(status_code, description, headers) {
+exports.HttpError = HttpError = function(
+    status_code, description, headers, message
+) {
+    Error.call(this, message || "");
+    this.name = "HttpError";
     this.status_code = status_code;
-    this.description = 
+    this.description =
         description || http_codes.http_status_codes[status_code] || "Unknown";
     this.headers = headers;
 }
 
 /** An 'Unauthorized' error. */
-exports.Http401 = Http401 = function(description) {
-    HttpError.apply(this, [401, description]);
+exports.Http401 = Http401 = function(description, headers, message) {
+    HttpError.call(this, 401, description, headers, message);
 };
 sys.inherits(Http401, HttpError);
 
 /** A 'Forbidden' error. */
-exports.Http403 = Http403 = function(description) {
-    HttpError.apply(this, [403, description]);
+exports.Http403 = Http403 = function(description, headers, message) {
+    HttpError.call(this, 403, description, headers, message);
 };
 sys.inherits(Http403, HttpError);
 
 /** A 'Not Found' error. */
-exports.Http404 = Http404 = function(description) {
-    HttpError.apply(this, [404, description]);
+exports.Http404 = Http404 = function(description, headers, message) {
+    HttpError.call(this, 404, description, headers, message);
 };
 sys.inherits(Http404, HttpError);
 
 /** A 'Method Not Allowed' error. */
-exports.Http405 = Http405 = function(description) {
-    HttpError.apply(this, [405, description]);
+exports.Http405 = Http405 = function(description, headers, message) {
+    HttpError.call(this, 405, description, headers, message);
 };
 sys.inherits(Http405, HttpError);
 
 /** A general server error. */
-exports.Http500 = Http500 = function(description) {
-    HttpError.apply(this, [500, description]);
+exports.Http500 = Http500 = function(description, headers, message) {
+    HttpError.call(this, 500, description, headers, message);
 };
 sys.inherits(Http500, HttpError);

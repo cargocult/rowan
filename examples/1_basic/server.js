@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * This example shows a fairly minimal, but typical structure for a Rowan
  * project. It exposes three URLs:
@@ -59,7 +61,7 @@ var display_bar = controllers.create_fallback([
     // The first controller checks for the magic word.
     function (context, callback) {
         if (/sesame/.test(context.remaining_path)) {
-            context.response.writeHeader(200, {'Content-Type':'text/plain'});
+            context.response.writeHead(200, {'Content-Type':'text/plain'});
             context.response.write("Opening...");
             context.response.end();
             callback(null);
@@ -99,4 +101,3 @@ var router = controllers.create_router([
 // Create and run the server.
 var root = controllers.create_error_handler([500], router);
 rowan.create_rowan_server(root).listen(8080);
-sys.puts('Server running at http://127.0.0.1:8080/')
