@@ -2,7 +2,7 @@
  * Tests for testing the in memory object store.
  */
 var rowan = require("rowan");
-var ObjectStore = rowan.store.memory.ObjectStore;
+var ObjectStore = rowan.db.memory.ObjectStore;
 var sys = require('sys');
 
 // Build a list of tests.

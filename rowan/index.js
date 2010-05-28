@@ -4,12 +4,12 @@
  */
 
 // Expose sub-modules
-exports.core = require('./core');
-exports.utils = require('./utils');
-exports.information = require('./information');
 exports.controllers = require('./controllers');
+exports.core = require('./core');
+exports.db = require('./db');
+exports.information = require('./information');
 exports.template = require('./template');
-exports.store = require('./store');
+exports.utils = require('./utils');
 
 // This is the main entry point for Rowan - creating a server.
 exports.create_server = exports.core.create_server.create_rowan_server;

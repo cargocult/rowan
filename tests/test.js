@@ -22,7 +22,7 @@ var suite = new rowan.utils.test.TestSuite(
 // Accumulate the tests from each module.
 suite.add_suite(require('./test_test').getTests());
 suite.add_suite(require('./test_uuid').getTests());
-suite.add_suite(require('./test_store_memory').getTests());
+suite.add_suite(require('./test_db_memory').getTests());
 
 // Run the test system.
 suite.run();
