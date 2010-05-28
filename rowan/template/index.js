@@ -26,7 +26,7 @@
 
 var sys = require('sys');
 var fs = require('fs');
-var core = require('./core');
+var core = require('../core');
 
 var template_cache = {};
 
