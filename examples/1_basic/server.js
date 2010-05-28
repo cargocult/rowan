@@ -50,7 +50,7 @@ var controllers = rowan.controllers;
 // OUTPUT CONTROLLERS
 
 // A controller that shows how to render something to a template.
-var display_foo = controllers.shortcuts.create_template_renderer(
+var display_foo = controllers.create_template_renderer(
     'templates/index.html',
     {title:'Hello World', items:['a', 'b', 'c']}
 );
@@ -73,7 +73,7 @@ var display_bar = controllers.create_fallback([
     },
 
     // The fallback controller asks for the magic word.
-    controllers.shortcuts.create_static_content("What's the magic word?")
+    controllers.create_static_content("What's the magic word?")
 ]);
 
 
@@ -91,7 +91,7 @@ var router = controllers.create_router([
     },
     {
         pattern:/^media\//,
-        view:controllers.serve_file.create_file_server('media/')
+        view:controllers.create_file_server('media/')
     }
 ]);
 
