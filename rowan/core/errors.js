@@ -24,6 +24,7 @@ exports.HttpError = HttpError = function(
         description || http_codes.http_status_codes[status_code] || "Unknown";
     this.headers = headers;
 }
+sys.inherits(HttpError, Error);
 
 /** An 'Unauthorized' error. */
 exports.Http401 = Http401 = function(description, headers, message) {

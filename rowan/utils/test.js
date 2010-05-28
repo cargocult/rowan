@@ -12,10 +12,15 @@ var plural = function(number, text, plural_form) {
     else return number+" "+plural_form;
 };
 
+/**
+ * A convenience subclass that avoids us needing to define the error
+ * name on each use.
+ */
 var TestError = function(message) {
     Error.call(this, message || "");
     this.name = "TestError";
 }
+sys.inherits(TestError, Error);
 
 /**
  * The test suite manages the execution of a series of tests. The
@@ -68,6 +73,8 @@ var TestError = function(message) {
  *     argument which is the test suite.
  */
 function TestSuite(tests_to_run, opts) {
+    event.EventEmitter.call(this);
+
     // Override default options with specified options.
     this.opts = {
         output: "normal",

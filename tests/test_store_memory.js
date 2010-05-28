@@ -41,7 +41,7 @@ tests.testGetObject = function(context) {
     });
 };
 
-// Set only works when the object doesn't exist, other wise use update.
+// Set only works when the object doesn't exist, otherwise use update.
 tests.testCantSetAgain = function(context) {
     var s = new ObjectStore();
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
@@ -123,8 +123,8 @@ tests.testEmpty = function(context) {
     });
 };
 
-// All object store methods should be run with a callback, even those without
-// a return value (in case of error).
+// All object store methods should be run with a callback, even those
+// without a return value (in case of error).
 tests.testMustHaveCallback = function(context) {
     var s = new ObjectStore();
     try {
