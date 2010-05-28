@@ -36,16 +36,12 @@ exports.create_static_content = function (content, content_type) {
  * change, its contents can.
  */
 exports.create_template_renderer =
-    function (template_name, data_object, content_type, query_cache) {
-        if (query_cache === null) {
-            query_cache = true;
-        }
-
+    function (template_name, data_object, content_type) {
         var content_type = content_type || 'text/html';
         return function (context, callback) {
             // Render the template.
             template.render(
-                template_name, data_object, query_cache,
+                template_name, data_object,
                 function (err, result) {
                     if (err) callback(err);
                     else {
