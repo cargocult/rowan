@@ -7,4 +7,4 @@
  * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
 exports.errors = require('./errors');
-exports.uuid = require('./uuid');
+exports.create_server = require('./create_server');

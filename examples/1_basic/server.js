@@ -100,4 +100,4 @@ var router = controllers.create_router([
 
 // Create and run the server.
 var root = controllers.create_error_handler([500], router);
-rowan.create_rowan_server(root).listen(8080);
+rowan.create_server(root).listen(8080);
