@@ -8,7 +8,7 @@ var tests = {name:"test_uuid.js"};
 
 var UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 tests.testUUID = function(context) {
-    rowan.core.uuid.createUUID(function(err, uuid) {
+    rowan.utils.uuid.createUUID(function(err, uuid) {
         if (err) return context.error(err);
 
         if (!UUID_RE.test(uuid.toString())) {
