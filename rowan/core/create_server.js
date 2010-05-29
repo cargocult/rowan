@@ -26,6 +26,7 @@ exports.create_rowan_server = function (root_controller, options) {
 
         // The unprocessed path should exclude the starting slash.
         var url_data = url.parse(request.url);
+        request.url_data = url_data;
         var path = url_data.pathname.substr(1);
 
         // A simple inner function for generating a server error.
@@ -50,7 +51,10 @@ exports.create_rowan_server = function (root_controller, options) {
         var context = {
             request:request,
             response:rowan_http.RowanResponse(response),
-            remaining_path:path
+            remaining_path:path,
+            // A structure for holding internal data. This is used by
+            // the blackboard controllers to add and remove data.
+            data:{}
         };
         root_controller(context, function(err) {
             if (err) {

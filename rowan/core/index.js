@@ -8,4 +8,4 @@
  */
 exports.errors = require('./errors');
 exports.create_server = require('./create_server');
-exports.http = require('./http_wrapper');
+exports.http = require('./http');

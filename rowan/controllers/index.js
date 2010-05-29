@@ -18,7 +18,7 @@
  * callback.
  *
  * With controllers that follow this structure, a web application can
- * be built from reusable components. This file contains the core
+ * be built from reusable components. This package contains the core
  * controllers that allow such construction.
  */
 

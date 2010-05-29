@@ -11,7 +11,7 @@ var errors = require('../core/errors');
  * if none match.
  */
 exports.create_router = function(routes) {
-    var fn = function(context, callback) {
+    return function(context, callback) {
         var path = context.remaining_path;
         for (i in routes) {
             var route = routes[i];
@@ -37,7 +37,6 @@ exports.create_router = function(routes) {
         // We found no valid patterns to match the url.
         callback(new errors.Http404());
     };
-    return fn;
 };
 
 /**
@@ -49,7 +48,7 @@ exports.create_router = function(routes) {
  * method isn't listed in the map.
  */
 exports.create_method_map = function(map, default_controller) {
-    var fn = function(context, callback) {
+    return function(context, callback) {
         var sub_controller = map[context.request.method];
         if (sub_controller) {
             return sub_controller(context, callback);
@@ -58,7 +57,6 @@ exports.create_method_map = function(map, default_controller) {
         }
         callback(new errors.Http405());
     };
-    return fn;
 };
 
 /**
@@ -92,7 +90,7 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
         }
     };
 
-    var fn = function(context, callback) {
+    return function(context, callback) {
         sub_controller(context, function(err) {
             if (err && !handle_error(context.response, err)) {
                 // Pass the error on up.
@@ -103,7 +101,6 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
             }
         });
     };
-    return fn;
 };
 
 /**
@@ -116,12 +113,6 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
  * absorbed. If none of the controllers in the fallback succeed, then
  * the error from the last controller in the list will be passed
  * up. If no controllers are given, a Http 404 error is called-back.
- *
- * This function recurses through the sub-controllers in order, rather
- * than iterating through them. Because Javascript doesn't support
- * tail-calls, huge numbers of sub-controllers may cause a stack-overflow.
- * Instead split the fallbacks into a tree, with only a couple of hundred
- * controllers per fallback.
  */
 exports.create_fallback = function(valid_errors, sub_controllers) {
     // Swap arguments if we were only given one.
@@ -135,7 +126,7 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
         return !valid_errors || valid_errors.indexOf(err.status_code) >= 0;
     }
 
-    var fn = function(context, callback) {
+    return function(context, callback) {
         // Take a copy so we don't have changes when waiting for results.
         var sub_controllers_copy = sub_controllers.slice();
 
@@ -149,9 +140,9 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
                     if (handle_error(err)) {
                         // We could handle this error, do we have another
                         // controller to pass on to?
-                            if (index+1 < sub_controllers_copy.length) {
-                            }
-                        process_controller(index+1);
+                        if (index+1 < sub_controllers_copy.length) {
+                            process_controller(index+1);
+                        }
                     } else {
                         // We need to report this error.
                         callback(err);
@@ -168,6 +159,38 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
         if (sub_controllers_copy) process_controller(0);
         else callback(new errors.Http404());
     };
-    return fn;
 };
 
+/**
+ * Makes the given data object visible to the sub_controller and its
+ * children, removing it before we back out of the tree past this
+ * point again. Any data not explicitly overwritten in this data
+ * structure will be retained.
+ *
+ * Only top level changes are supported. So if the data is already
+ * {a:{b:1, c:2}} and you pass {a:{d:3}} into this function, then the
+ * b and c values for property a will be lost. If the data is already
+ * {b:1, c:2}, however, and you pass {d:3}, then the subtree will see
+ * 'b', 'c', and 'd'.
+ */
+exports.create_subtree_data = function(data, sub_controller) {
+    return function(context, callback) {
+        // Copy the data we're given, with the current data as its
+        // prototype.
+        var old_data = context.data;
+        var new_data = Object.create(old_data);
+        for (var property in old_data) {
+            if (old_data.hasOwnProperty(property)) {
+                new_data[property] = old_data[property];
+            }
+        }
+        context.data = new_data;
+
+        sub_controller(context, function() {
+            // Go back to the old data, before calling back to our
+            // parent.
+            context.data = old_data;
+            callback.apply(null, arguments);
+        });
+    };
+};

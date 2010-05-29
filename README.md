@@ -131,22 +131,15 @@ Acknowledgments
 ---------------
 
 The code is based on my Python/WSGI Rowan framework code (on github at
-http://github.com/idmillington/Rowan-Python). There are two major
-differences between this Node.js implementation and that:
-
-1. This version doesn't have the hierarchical blackboard data
-structure that can be useful for hiding data from controllers. I might
-add this later, it certainly improves modularity.
-
-2. Because Node.js doesn't have an established templating language, I
+http://github.com/idmillington/Rowan-Python). Unlike that version, and
+because Node.js doesn't have an established templating language, I
 have added a simple templating system. Possibly too simple!
 
 I am using this microframework as the glue in an SOA project,
 integrating with conventional servers, databases and CouchDB.
 
-It has been updated to work with Node 0.1.94. Its upgrade to support
-the radical changes in Node 0.1.30 say updates to much of the code and
-API and made it considerably simpler as a result.
+Its upgrade to support the radical changes in Node 0.1.30 touched much
+of the code and API and made it considerably simpler as a result.
 
 Get in touch with any observations or questions.
 
