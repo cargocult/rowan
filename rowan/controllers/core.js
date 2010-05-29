@@ -80,7 +80,8 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
         if (!unhandled_errors || unhandled_errors.indexOf(status_code) < 0) {
             var description = error.description || "Server Error";
 
-            response.writeHead(status_code, {'Content-Type':'text/html'});
+            response.set_status(status_code);
+            response.add_headers({'Content-Type':'text/html'});
             response.write(
                 "<h1>"+status_code.toString()+" "+description+"</h1>"
             );

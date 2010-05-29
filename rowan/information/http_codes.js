@@ -1,6 +1,7 @@
 /**
- * This module provides a lookup table of human readable HTTP status code
- * descriptions.
+ * This module provides a lookup table of human readable HTTP status
+ * code descriptions. We could just use the list in node's
+ * http.STATUS_CODE object, but this is more comprehensive.
  *
  * H/T: I scraped this list from the Wikipedia entry at
  * http://en.wikipedia.org/wiki/List_of_HTTP_status_codes

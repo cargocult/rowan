@@ -194,7 +194,6 @@ tests.testMustHaveCallback = function(test_runner) {
     );
 };
 
-
 // ---------------------------------------------------------------------------
 exports.getTests = function() {
     return rowan.utils.test.getModuleTests(tests);

@@ -524,25 +524,6 @@ exports.DataStore = DataStore = {
     },
 
     /**
-     * If a type doesn't have a thaw handler registered, this function
-     * will do the job.
-     */
-    _default_thaw_handler: function(raw_data, context) {
-        var new_object = {};
-
-        // Go through each field and notify the context that we want
-        // to thaw it.
-        for (var property in raw_data) {
-            if (raw_data.hasOwnProperty(property)) {
-                if (property == '_id' || property == '_rev') continue;
-                context.thaw(new_object, property, raw_data[property]);
-            }
-        }
-
-        return new_object;
-    },
-
-    /**
      * Given an array retrieved from the database, this method
      * converts it, and its contents, into full thawed data
      * structures.
@@ -580,15 +561,22 @@ exports.DataStore = DataStore = {
     },
 
     /**
-     * Caches the given object in the data store, so that future
-     * loads find it.
+     * If a type doesn't have a thaw handler registered, this function
+     * will do the job.
      */
-    _cache_loaded_object: function(uuid, revision, object) {
-        this._object_cache[uuid] = {
-            object: object,
-            revision: revision,
-            up_to_date: timestamp()
-        };
+    _default_thaw_handler: function(raw_data, context) {
+        var new_object = {};
+
+        // Go through each field and notify the context that we want
+        // to thaw it.
+        for (var property in raw_data) {
+            if (raw_data.hasOwnProperty(property)) {
+                if (property == '_id' || property == '_rev') continue;
+                context.thaw(new_object, property, raw_data[property]);
+            }
+        }
+
+        return new_object;
     },
 
     /**
@@ -687,5 +675,17 @@ exports.DataStore = DataStore = {
         };
         // Start with the first uuid
         do_next_uuid();
+    },
+
+    /**
+     * Caches the given object in the data store, so that future
+     * loads find it.
+     */
+    _cache_loaded_object: function(uuid, revision, object) {
+        this._object_cache[uuid] = {
+            object: object,
+            revision: revision,
+            up_to_date: timestamp()
+        };
     }
 };

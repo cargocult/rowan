@@ -10,12 +10,15 @@ var core = require('../core');
  * A utility function that responds to a request in one call.
  */
 response_util = function (context, callback, content, content_type) {
-        content_type = content_type || 'text/plain';
-        context.response.writeHead(200, {'Content-Type': content_type});
-        context.response.write(content);
-        context.response.end();
-        callback(null);
-    };
+    content_type = content_type || 'text/plain';
+
+    context.response.set_status(200);
+    context.response.add_headers({"Content-Type":content_type});
+
+    context.response.write(content);
+    context.response.end();
+    callback(null);
+};
 
 /**
  * A controller that outputs the given content verbatim. The content type
@@ -45,7 +48,9 @@ exports.create_template_renderer =
                 function (err, result) {
                     if (err) callback(err);
                     else {
-                        response_util(context, callback, result, content_type);
+                        response_util(
+                            context, callback, result, content_type
+                        );
                     }
                 });
         };

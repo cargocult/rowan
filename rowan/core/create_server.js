@@ -7,6 +7,7 @@ var url = require('url');
 var sys = require('sys');
 var http = require('http');
 var errors = require('./errors');
+var rowan_http = require('./http');
 
 /**
  * Builds and returns a HTTP server. This doesn't call the server. To
@@ -30,6 +31,9 @@ exports.create_rowan_server = function (root_controller, options) {
         // A simple inner function for generating a server error.
         var report_error = function (err) {
             var err_code = err.status_code;
+            // Here we do want writeHead because we're dealing with
+            // the node http.ServerResponse object passed into
+            // http.createServer's callback.
             response.writeHead(err_code, {'Context-Type':'text/html'});
             response.write("<h1>"+err_code+" "+err.description+"</h1>");
             if (err.message) {
@@ -45,7 +49,7 @@ exports.create_rowan_server = function (root_controller, options) {
         // Build the initial context data and call the root controller.
         var context = {
             request:request,
-            response:response,
+            response:rowan_http.RowanResponse(response),
             remaining_path:path
         };
         root_controller(context, function(err) {
