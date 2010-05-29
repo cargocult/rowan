@@ -1,3 +1,5 @@
+var sys = require('sys');
+
 /**
  * Runs a series of functions in turn, passing the result (or error)
  * of each one onto the next. Each function can either return some
@@ -11,22 +13,63 @@
  * methods above, however. You still need to return a value, throw an
  * error or call this(). The abort() method returns true, however, so
  * you can use the idiom: return this.abort();
+ *
+ * You can pass an options object as the first argument to this
+ * function, the following options are available:
+ *
+ * - finally_do: A function object that will always get run as the
+ *   last in the sequence, even if a previous function calls
+ *   this.abort();
+ *
+ * - throw_error: If an error makes it to the end of the sequence,
+ *   then it will be ignored by default. Set this to true if you want
+ *   the error to be thrown. Be aware, however, that throwing an error
+ *   in a callback (i.e. if ANY of the functions in your sequence use
+ *   a callback) is dangerous, as there is no way for Node to work out
+ *   what bit of code the error belongs to. It normally causes the
+ *   script to terminate. Use the 'finally' clause to do any
+ *   last-ditch tidying up, and make sure it doesn't throw an error.
  */
-var sequence = exports.sequence = function() {
-    // Create the reversed list of actions to take.
-    var all_calls = Array.prototype.slice.call(arguments);
+var sequence = exports.sequence = function(opts) {
+    var all_calls;
+    var my_opts = {
+        throw_error: false,
+        finally_do: null
+    };
+
+    // Check if we were given options, if so override the defaults.
+    if (typeof opts === 'object' && opts.constructor !== Function) {
+        for (var opt in opts) {
+            if (opts.hasOwnProperty(opt)) {
+                my_opts[opt] = opts[opt];
+            }
+        }
+        all_calls = Array.prototype.slice.call(arguments, 1);
+    } else {
+        all_calls = Array.prototype.slice.call(arguments);
+    }
+
+    // We need to reverse the list of actions so we pop them in order.
     all_calls.reverse();
 
     // Create a function that can do just the next action.
+    var finally_done = false;
     var do_next = function(err) {
         var next_call = all_calls.pop();
         if (!next_call) {
-            // Now we can throw the error, if we got one.
-            if (err) {
-                sys.puts(JSON.stringify(err));
-                //throw err;
+            // We're out of sequence calls, check for a finally in our
+            // options.
+            if (my_opts.finally_do && !finally_done) {
+                next_call = my_opts.finally_do;
+                finally_done = true;
+            } else {
+                // We really are at the end of the line, so check if
+                // we need to throw any errors.
+                if (err && my_opts.throw_error) {
+                    throw err;
+                }
+                return;
             }
-            return;
         }
 
         // Call the next function in the chain.
@@ -64,10 +107,11 @@ var sequence = exports.sequence = function() {
  * Creates a custom sequence that has the given fixed before and after
  * steps. This is useful for automating set-up, tear-down behavior.
  */
-exports.create_wrapped_sequence = function(before_steps, after_steps) {
+exports.create_wrapped_sequence = function(before_steps, after_steps, opts) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
         args = Array.prototype.concat(before_steps, args, after_steps);
+        if (opts) args.unshift(opts);
         return sequence.apply(this, args);
     }
 };
