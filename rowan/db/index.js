@@ -1,6 +1,4 @@
 /**
- * This package provides a general interface to a JSON storage
- * mechanism.  See the base.js for the interface and the memory.js
- * file for the minimal (in-memory) implementation.
+ * This package provides a general interface to JSON storage backends.
  */
-exports.memory = require('./memory');
+exports.CouchDataStore = require('./couch').DataStore;
