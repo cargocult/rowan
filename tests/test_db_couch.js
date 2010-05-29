@@ -6,72 +6,12 @@ var DataStore = rowan.db.couch.DataStore;
 
 var sys = require('sys');
 
-var sequence = function() {
-    // Create the reversed list of actions to take.
-    var all_calls = Array.prototype.slice.call(arguments);
-    all_calls.reverse();
-
-    // Create a function that can do just the next action.
-    var do_next = function(err) {
-        var next_call = all_calls.pop();
-        if (!next_call) {
-            // Now we can throw the error, if we got one.
-            if (err) {
-                sys.puts(JSON.stringify(err));
-                //throw err;
-            }
-            return;
-        }
-
-        // Call the next function in the chain.
-        var result;
-        try {
-            result = next_call.apply(do_next, arguments);
-        } catch (err) {
-            // Pass on errors down the chain.
-            return do_next(err);
-        }
-
-        // If we got a result then the last function was probably
-        // synchronous, so we move along. Otherwise we wait to be
-        // called asynchronously.
-        if (result !== undefined) {
-            do_next(null, result);
-        }
-    };
-
-    // We can call this.abort to finish at the next callback.
-    do_next.abort = function() {
-        // Clear the pending list.
-        all_calls = [];
-
-        // This allows us to use abort in the idiom:
-        // return this.abort();
-        return true;
-    };
-
-    // Start it off.
-    do_next(null);
-};
-
-/**
- * Creates a custom sequence that has the given fixed before and after
- * steps. This is useful for automating set-up, tear-down behavior.
- */
-var create_wrapped_sequence = function(before_steps, after_steps) {
-    return function () {
-        var args = Array.prototype.slice.call(arguments);
-        args = Array.prototype.concat(before_steps, args, after_steps);
-        return sequence.apply(this, args);
-    }
-};
-
 /**
  * A sequence wrapper that creates a database initially and can report
  * an error to the given context.
  */
 var test_sequence = function(context) {
-    return create_wrapped_sequence([
+    return rowan.utils.sequence.create_wrapped_sequence([
         function() {
             rowan.utils.uuid.createUUID(this);
         },
