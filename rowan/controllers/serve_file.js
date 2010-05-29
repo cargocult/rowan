@@ -46,7 +46,8 @@ exports.create_file_server = function(base_location) {
                 err.message = err.toString();
                 callback(err);
             } else {
-                context.response.writeHead(200, {
+                context.response.set_status(200);
+                context.response.add_headers({
                     'Content-Type': mime_type,
                     'Content-Length': file_data.length
                 });

@@ -148,7 +148,7 @@ function TestSuite(tests_to_run, opts) {
                             break;
                         case 'error':
                             sys.puts(RED+"ERROR: "+test_defn.name+NO_COLOR);
-                            sys.puts(" - "+test_defn.error.toString());
+                            sys.puts(" - "+JSON.stringify(test_defn.error));
                             break;
                         }
                     }
@@ -167,7 +167,7 @@ function TestSuite(tests_to_run, opts) {
                 results.push(RED+plural(suite.failures, "failure"));
             }
             if (suite.errors > 0) {
-                results.push(RED+plural(suite.failures, "error"));
+                results.push(RED+plural(suite.errors, "error"));
             }
             sys.puts(results.join(", ")+"."+NO_COLOR+"\n");
         });

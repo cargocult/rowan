@@ -61,7 +61,8 @@ var display_bar = controllers.create_fallback([
     // The first controller checks for the magic word.
     function (context, callback) {
         if (/sesame/.test(context.remaining_path)) {
-            context.response.writeHead(200, {'Content-Type':'text/plain'});
+            context.response.set_status(200);
+            context.response.add_headers({'Content-Type':'text/plain'});
             context.response.write("Opening...");
             context.response.end();
             callback(null);
