@@ -148,7 +148,7 @@ function TestSuite(tests_to_run, opts) {
                             break;
                         case 'error':
                             sys.puts(RED+"ERROR: "+test_defn.name+NO_COLOR);
-                            sys.puts(" - "+test_defn.error.toString());
+                            sys.puts(" - "+JSON.stringify(test_defn.error));
                             break;
                         }
                     }
