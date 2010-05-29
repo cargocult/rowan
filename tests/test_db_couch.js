@@ -8,7 +8,8 @@ var sys = require('sys');
 
 /**
  * A sequence wrapper that creates a database initially and can report
- * an error to the given context.
+ * an error to the given context. This sequence will clean up after
+ * itself on failure, so don't use this.abort() with this.
  */
 var test_sequence = function(context) {
     return rowan.utils.sequence.create_wrapped_sequence([
