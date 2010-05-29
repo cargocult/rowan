@@ -1,4 +1,5 @@
 var couchdb = require("couchdb/couchdb");
+var sys = require('sys');
 
 /**
  * Returns the current unix timestamp. In seconds since the epoch.
@@ -71,9 +72,10 @@ exports.DataStore = DataStore = {
             });
         }
 
-        var revision = this._object_cache[object.id].revision;
-        var freeze = object.freeze;
+        var revision;
         var json;
+        var cache_data = this._object_cache[object.id]
+        var freeze = object.freeze;
 
         // Try to get the object to freeze itself into raw data.
         if (freeze) {
@@ -90,11 +92,11 @@ exports.DataStore = DataStore = {
         // Add couch's data.
         json._id = json.id;
         delete json.id; // Don't store the id twice.
-        if (revision) {
+        if (cache_data && cache_data.revision) {
             json._rev = revision;
         }
 
-        db.saveDoc(object.id, json, callback);
+        this._get_db().saveDoc(object.id, json, callback);
     },
 
     /**
@@ -184,6 +186,32 @@ exports.DataStore = DataStore = {
     // ----------------------------------------------------------------------
     // Functions for creating and initializing a data store.
     // ----------------------------------------------------------------------
+
+    /**
+     * Wipes and recreates the entire database and all the data within
+     * it. This is used mainly for testing.
+     */
+    wipe: function(callback) {
+        var db = this._get_db();
+        db.exists(function(err, bool) {
+            if (bool) {
+                db.remove(function(err) {
+                    if (err) return callback(err);
+                    db.create(callback);
+                });
+            } else {
+                db.create(callback);
+            }
+        });
+    },
+
+    /**
+     * Deletes the whole database, after use. This irreversibly
+     * destroys all the data in the database.
+     */
+    destroy: function(callback) {
+        this._get_db().remove(callback);
+    },
 
     /**
      * Tells the data store that objects it finds with the given
@@ -422,11 +450,13 @@ exports.DataStore = DataStore = {
         // Go through each field and notify the context that we want
         // to thaw it.
         for (var property in raw_data) {
-            if (db_object.hasOwnProperty(property)) {
+            if (raw_data.hasOwnProperty(property)) {
                 if (property == '_id' || property == '_rev') continue;
                 context.thaw(new_object, property, raw_data[property]);
             }
         }
+
+        return new_object;
     },
 
     /**

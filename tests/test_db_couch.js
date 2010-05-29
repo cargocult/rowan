@@ -2,48 +2,150 @@
  * Tests for testing the in memory object store.
  */
 var rowan = require("rowan");
-var ObjectStore = rowan.db.memory.ObjectStore;
+var DataStore = rowan.db.couch.DataStore;
+
 var sys = require('sys');
 
+var sequence = function() {
+    // Create the reversed list of actions to take.
+    var all_calls = Array.prototype.slice.call(arguments);
+    all_calls.reverse();
+
+    // Create a function that can do just the next action.
+    var do_next = function(err) {
+        var next_call = all_calls.pop();
+        if (!next_call) {
+            // Now we can throw the error, if we got one.
+            if (err) {
+                sys.puts(JSON.stringify(err));
+                //throw err;
+            }
+            return;
+        }
+
+        // Call the next function in the chain.
+        var result;
+        try {
+            result = next_call.apply(do_next, arguments);
+        } catch (err) {
+            // Pass on errors down the chain.
+            return do_next(err);
+        }
+
+        // If we got a result then the last function was probably
+        // synchronous, so we move along. Otherwise we wait to be
+        // called asynchronously.
+        if (result !== undefined) {
+            do_next(null, result);
+        }
+    };
+
+    // We can call this.abort to finish at the next callback.
+    do_next.abort = function() {
+        // Clear the pending list.
+        all_calls = [];
+
+        // This allows us to use abort in the idiom:
+        // return this.abort();
+        return true;
+    };
+
+    // Start it off.
+    do_next(null);
+};
+
+/**
+ * Creates a custom sequence that has the given fixed before and after
+ * steps. This is useful for automating set-up, tear-down behavior.
+ */
+var create_wrapped_sequence = function(before_steps, after_steps) {
+    return function () {
+        var args = Array.prototype.slice.call(arguments);
+        args = Array.prototype.concat(before_steps, args, after_steps);
+        return sequence.apply(this, args);
+    }
+};
+
+/**
+ * A sequence wrapper that creates a database initially and can report
+ * an error to the given context.
+ */
+var test_sequence = function(context) {
+    return create_wrapped_sequence([
+        function() {
+            rowan.utils.uuid.createUUID(this);
+        },
+        function(err, uuid) {
+            if (err) {
+                context.error(err);
+                return this.abort();
+            }
+            this.store = DataStore.create('test-'+uuid);
+            this.store.wipe(this);
+        }
+    ],[
+        function(err) {
+            if (err) {
+                context.error(err);
+            } else {
+                context.passed(err);
+            }
+            this.store.destroy(this);
+        }
+    ]);
+};
+
 // Build a list of tests.
-var tests = {name:"test_store_memory.js"};
+var tests = {name:__filename};
 
 tests.testCreateStore = function(context) {
-    // Smoke-test creating a store.
-    var s = new ObjectStore();
-    return context.passed();
+    test_sequence(context)();
 };
 
 tests.testSetObject = function(context) {
-    var s = new ObjectStore();
-    s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
-        if (err) return context.error(err);
-        context.passed();
-    });
+    test_sequence(context)(
+        function(err) {
+            if (err) throw err;
+            this.store.save({id:"object-1", foo:1, bar:[1,2,3]}, this);
+        }
+    );
 };
 
 // Objects should be retrievable.
 tests.testGetObject = function(context) {
-    var s = new ObjectStore();
-    s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
-        if (err) return context.error(err);
+    test_sequence(context)(
+        function(err) {
+            if (err) throw err;
+            this.store.save({id:"object-1", foo:1, bar:[1,2,3]}, this);
+        },
+        function(err) {
+            if (err) throw err;
+            this.store.get("object-1", this);
+        },
+        function(err, data) {
+            if (err) throw err;
 
-        s.get("object-1", function(err, data) {
-            if (err) return context.error(err);
-
-            if (!data) return context.failed("No data returned.");
-            if (data.foo != 1 && data.bar[0] == 1 &&
-                data.bar.length == 3) {
-                return context.failed("Incorrect data returned.");
+            if (!data) {
+                throw new Error("No data returned.");
             }
-            context.passed();
-        });
-    });
+            if (data.foo != 1 || data.bar[0] != 1 || data.bar.length != 3) {
+                throw new Error("Incorrect data returned.");
+            }
+            return true;
+        }
+    );
 };
 
+/*
 // Set only works when the object doesn't exist, otherwise use update.
 tests.testCantSetAgain = function(context) {
-    var s = new ObjectStore();
+    var s = DataStore.create('test');
+    sequence(
+        function() {
+            s.wipe();
+        },
+        function(err) {
+        },
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -57,7 +159,7 @@ tests.testCantSetAgain = function(context) {
 
 // Updating replaces the old object with a new object.
 tests.testUpdate = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -79,7 +181,7 @@ tests.testUpdate = function(context) {
 
 // Accessing a removed object returns null.
 tests.testRemove = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:1, bar:[1,2,3]}, null, function(err) {
         if (err) return context.error(err);
 
@@ -100,7 +202,7 @@ tests.testRemove = function(context) {
 
 // Emptying removes everything
 tests.testEmpty = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:1}, null, function(err) {
         if (err) return context.error(err);
 
@@ -126,7 +228,7 @@ tests.testEmpty = function(context) {
 // All object store methods should be run with a callback, even those
 // without a return value (in case of error).
 tests.testMustHaveCallback = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     try {
         s.set("object-1", {foo:1, bar:[1,2,3]}, null, null);
     } catch(err) {
@@ -137,7 +239,7 @@ tests.testMustHaveCallback = function(context) {
 
 // The key index should be settable.
 tests.testSetIndex = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
         context.passed();
@@ -146,7 +248,7 @@ tests.testSetIndex = function(context) {
 
 // We should be able to query the uuids matching the given key index.
 tests.testQueryIndexUUIDs = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -167,7 +269,7 @@ tests.testQueryIndexUUIDs = function(context) {
 
 // When an indexed value changes, the old one should be deleted.
 tests.testUpdateIndexNewValue = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -206,7 +308,7 @@ tests.testUpdateIndexNewValue = function(context) {
 
 // When an index request changes, the old one should be deleted.
 tests.testUpdateIndexNewKey = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:12938}, {keys:{key1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -245,7 +347,7 @@ tests.testUpdateIndexNewKey = function(context) {
 
 // We can index more than one thing in a set.
 tests.testSetsStoreMultiple = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
 
     var indices = {sets:{group:'group'}};
 
@@ -273,7 +375,7 @@ tests.testSetsStoreMultiple = function(context) {
 
 // We should be able to change the index for sets as well as keys.
 tests.testUpdateIndexNewSet = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
     s.set("object-1", {foo:12938}, {sets:{set1:'foo'}}, function(err) {
         if (err) return context.error(err);
 
@@ -312,7 +414,7 @@ tests.testUpdateIndexNewSet = function(context) {
 
 // Each key represents a unique object, so it can't be used by another.
 tests.testCantReuseKey = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
 
     var indices = {keys:{key1:'foo'}};
 
@@ -332,7 +434,7 @@ tests.testCantReuseKey = function(context) {
 
 // We can't bump an existing key by updating a different one.
 tests.testCantReuseKeyByUpdate = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
 
     var indices = {keys:{key1:'foo'}};
 
@@ -355,7 +457,7 @@ tests.testCantReuseKeyByUpdate = function(context) {
 };
 // A key query should return just one result.
 tests.testQueryByKey = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
 
     var indices = {keys:{key1:'foo'}};
 
@@ -390,7 +492,7 @@ tests.testQueryByKey = function(context) {
 
 // A set query may return any number of results.
 tests.testQueryBySet = function(context) {
-    var s = new ObjectStore();
+    var s = new DataStore('test');
 
     var indices = {sets:{group:'group'}};
 
@@ -416,7 +518,7 @@ tests.testQueryBySet = function(context) {
         });
     });
 };
-
+*/
 
 // ---------------------------------------------------------------------------
 exports.getTests = function() {

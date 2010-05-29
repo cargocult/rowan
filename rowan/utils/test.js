@@ -167,7 +167,7 @@ function TestSuite(tests_to_run, opts) {
                 results.push(RED+plural(suite.failures, "failure"));
             }
             if (suite.errors > 0) {
-                results.push(RED+plural(suite.failures, "error"));
+                results.push(RED+plural(suite.errors, "error"));
             }
             sys.puts(results.join(", ")+"."+NO_COLOR+"\n");
         });
