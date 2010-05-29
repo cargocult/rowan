@@ -9,6 +9,14 @@ var timestamp = function() {
 };
 
 /**
+ * All functions that take a callback, require it.
+ */
+var CallbackRequiredError = {
+    name:"CallbackRequiredError",
+    message:"You must give a valid callback, to be notified of errors."
+};
+
+/**
  * Manages the loading of data. Data loading is a complex process
  * possibly involving several trips to the underlying data store, with
  * asynchronous waits until that is done.
@@ -27,6 +35,8 @@ exports.DataStore = DataStore = {
      * its dependencies have been loaded also.
      */
     get: function(uuid, callback) {
+        if (!callback) throw CallbackRequiredError;
+
         var that = this;
 
         // Check if we've buffered that object already.
@@ -64,6 +74,8 @@ exports.DataStore = DataStore = {
      * given when the callback is called, then the save worked.
      */
     save: function(object, callback) {
+        if (!callback) throw CallbackRequiredError;
+
         // The object must have an id to be saved.
         if (!object.id) {
             callback({
@@ -72,7 +84,6 @@ exports.DataStore = DataStore = {
             });
         }
 
-        var revision;
         var json;
         var cache_data = this._object_cache[object.id]
         var freeze = object.freeze;
@@ -93,10 +104,68 @@ exports.DataStore = DataStore = {
         json._id = json.id;
         delete json.id; // Don't store the id twice.
         if (cache_data && cache_data.revision) {
-            json._rev = revision;
+            json._rev = cache_data.revision;
         }
 
-        this._get_db().saveDoc(object.id, json, callback);
+        var that = this;
+        this._get_db().saveDoc(object.id, json, function(err, result) {
+            if (!err) {
+                // Store the new revision, so we can write it again.
+                that._cache_loaded_object(object.id, result.rev, object);
+            }
+            callback(err);
+        });
+    },
+
+    /**
+     * Removes the given object from the database.
+     */
+    remove: function(uuid, callback) {
+        if (!callback) throw CallbackRequiredError;
+
+        var that = this;
+
+        // We need the revision number in order to delete.
+        var revision = null;
+
+        var db = this._get_db();
+        var cache_data = this._object_cache[uuid]
+        if (!cache_data) {
+            // We don't have a version of it, so do we force through
+            // the delete?
+            if (this._opts.force_overwrite) {
+                db.getDoc(uuid, function(err, data) {
+                    if (err) return callback(err);
+                    db.removeDoc(uuid, data._rev, callback);
+                });
+            } else {
+                callback({
+                    name:"DataStoreDeleteError",
+                    message:"Can't delete unloaded object "+
+                        "(without force_overwrite)."
+                });
+            }
+        } else {
+            // We have a revision, try to use it.
+            db.removeDoc(uuid, cache_data.revision, function(err) {
+                if (err) {
+                    if (err.rerror == "conflict" &&
+                        that._opts.force_overwrite) {
+                        // Load the revision just so we can delete.
+                        db.getDoc(uuid, function(err, data) {
+                            if (err) return callback(err);
+                            db.removeDoc(uuid, data._rev, callback);
+                        });
+                    } else {
+                        callback(err);
+                    }
+                } else {
+                    callback();
+                }
+            });
+
+            delete this._object_cache[uuid];
+        }
     },
 
     /**
@@ -104,6 +173,8 @@ exports.DataStore = DataStore = {
      * register_index method for details of these calls.
      */
     query: function(index_name, criteria, callback, opts) {
+        if (!callback) throw CallbackRequiredError;
+
         var that = this;
 
         // We can pass in additional CouchDB query parameters in opts.
@@ -192,6 +263,8 @@ exports.DataStore = DataStore = {
      * it. This is used mainly for testing.
      */
     wipe: function(callback) {
+        if (!callback) throw CallbackRequiredError;
+
         var db = this._get_db();
         db.exists(function(err, bool) {
             if (bool) {
@@ -203,6 +276,7 @@ exports.DataStore = DataStore = {
                 db.create(callback);
             }
         });
+        this._object_cache = {};
     },
 
     /**
@@ -210,6 +284,8 @@ exports.DataStore = DataStore = {
      * destroys all the data in the database.
      */
     destroy: function(callback) {
+        if (!callback) throw CallbackRequiredError;
+
         this._get_db().remove(callback);
     },
 
@@ -289,6 +365,8 @@ exports.DataStore = DataStore = {
      * error, then the indices were created correctly.
      */
     create_indices: function(callback) {
+        if (!callback) throw CallbackRequiredError;
+
         var that = this;
 
         // Create the design document.
@@ -347,12 +425,17 @@ exports.DataStore = DataStore = {
      *
      * - index_dd: The name of the Design Document to store our indices,
      *             default 'query_indices'.
+     *
+     * - force_overwrite: Forces the system to ignore MVCC tags in
+     *   couch, and always overwrite or delete documents, even when we
+     *   don't have their latest revisions.
      */
     create: function(database_name, opts) {
         var my_opts = {
             port: 5984,
             host: "localhost",
-            index_dd: "query_indices"
+            index_dd: "query_indices",
+            force_overwrite: false
         };
         for (var opt in opts) {
             if (opts.hasOwnProperty(opt)) {
@@ -504,7 +587,7 @@ exports.DataStore = DataStore = {
         this._object_cache[uuid] = {
             object: object,
             revision: revision,
-            loaded: timestamp()
+            up_to_date: timestamp()
         };
     },
 
