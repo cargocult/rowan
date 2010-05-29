@@ -9,54 +9,54 @@
 var fs = require('fs');
 
 var errors = require('../core/errors');
-var mime_types = require('../information/mime_types');
+var mimeTypes = require('../information/mime_types');
 
 /**
  * A controller that serves files from a particular path on the hard-drive.
  * When you create the controller you need to specify the path it will serve
  * from.
  */
-exports.create_file_server = function(base_location) {
-    if (base_location.substr(base_location.length-1) != '/') {
-        base_location += '/';
+exports.createFileServer = function(baseLocation) {
+    if (baseLocation.substr(baseLocation.length-1) != '/') {
+        baseLocation += '/';
     }
 
     return function(context, callback) {
-        var path = context.remaining_path;
+        var path = context.remainingPath;
 
         // Make sure we've got no directory traversals in the path
-        if (traversal_regex.test(path)) {
+        if (traversalRegex.test(path)) {
             callback(new errors.Http403());
         }
 
         // Build the full path and content type.
-        var match = file_extension_regex.exec(path);
+        var match = fileExtensionRegex.exec(path);
         if (!match) {
             callback(new errors.Http404());
         }
         var extension = match[1];
-        var mime_type = mime_types.for_extension(extension);
-        var encoding = (mime_type.substr(0, 4) == 'text')?"utf8":"binary";
-        path = base_location + path;
+        var mimeType = mimeTypes.forExtension(extension);
+        var encoding = (mimeType.substr(0, 4) == 'text')?"utf8":"binary";
+        path = baseLocation + path;
 
         // Load and send the file.
-        fs.readFile(path, encoding, function (err, file_data) {
+        fs.readFile(path, encoding, function (err, fileData) {
             if (err) {
                 var err = new errors.Http404();
                 err.message = err.toString();
                 callback(err);
             } else {
-                context.response.set_status(200);
-                context.response.add_headers({
-                    'Content-Type': mime_type,
-                    'Content-Length': file_data.length
+                context.response.setStatus(200);
+                context.response.addHeaders({
+                    'Content-Type': mimeType,
+                    'Content-Length': fileData.length
                 });
-                context.response.write(file_data, encoding);
+                context.response.write(fileData, encoding);
                 context.response.end();
                 callback(null);
             }
         });
     };
 };
-var file_extension_regex = /.*(\.\w+)$/;
-var traversal_regex = /(^|\/)\.\.\W/;
+var fileExtensionRegex = /.*(\.\w+)$/;
+var traversalRegex = /(^|\/)\.\.\W/;

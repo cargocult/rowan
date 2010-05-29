@@ -17,11 +17,11 @@ var sys = require('sys');
  * You can pass an options object as the first argument to this
  * function, the following options are available:
  *
- * - finally_do: A function object that will always get run as the
+ * - finallyDo: A function object that will always get run as the
  *   last in the sequence, even if a previous function calls
  *   this.abort();
  *
- * - throw_error: If an error makes it to the end of the sequence,
+ * - throwError: If an error makes it to the end of the sequence,
  *   then it will be ignored by default. Set this to true if you want
  *   the error to be thrown. Be aware, however, that throwing an error
  *   in a callback (i.e. if ANY of the functions in your sequence use
@@ -31,41 +31,41 @@ var sys = require('sys');
  *   last-ditch tidying up, and make sure it doesn't throw an error.
  */
 var sequence = exports.sequence = function(opts) {
-    var all_calls;
-    var my_opts = {
-        throw_error: false,
-        finally_do: null
+    var allCalls;
+    var myOpts = {
+        throwError: false,
+        finallyDo: null
     };
 
     // Check if we were given options, if so override the defaults.
     if (typeof opts === 'object' && opts.constructor !== Function) {
         for (var opt in opts) {
             if (opts.hasOwnProperty(opt)) {
-                my_opts[opt] = opts[opt];
+                myOpts[opt] = opts[opt];
             }
         }
-        all_calls = Array.prototype.slice.call(arguments, 1);
+        allCalls = Array.prototype.slice.call(arguments, 1);
     } else {
-        all_calls = Array.prototype.slice.call(arguments);
+        allCalls = Array.prototype.slice.call(arguments);
     }
 
     // We need to reverse the list of actions so we pop them in order.
-    all_calls.reverse();
+    allCalls.reverse();
 
     // Create a function that can do just the next action.
-    var finally_done = false;
-    var do_next = function(err) {
-        var next_call = all_calls.pop();
-        if (!next_call) {
+    var finallyDone = false;
+    var doNext = function(err) {
+        var nextCall = allCalls.pop();
+        if (!nextCall) {
             // We're out of sequence calls, check for a finally in our
             // options.
-            if (my_opts.finally_do && !finally_done) {
-                next_call = my_opts.finally_do;
-                finally_done = true;
+            if (myOpts.finallyDo && !finallyDone) {
+                nextCall = myOpts.finallyDo;
+                finallyDone = true;
             } else {
                 // We really are at the end of the line, so check if
                 // we need to throw any errors.
-                if (err && my_opts.throw_error) {
+                if (err && myOpts.throwError) {
                     throw err;
                 }
                 return;
@@ -75,24 +75,24 @@ var sequence = exports.sequence = function(opts) {
         // Call the next function in the chain.
         var result;
         try {
-            result = next_call.apply(do_next, arguments);
+            result = nextCall.apply(doNext, arguments);
         } catch (err) {
             // Pass on errors down the chain.
-            return do_next(err);
+            return doNext(err);
         }
 
         // If we got a result then the last function was probably
         // synchronous, so we move along. Otherwise we wait to be
         // called asynchronously.
         if (result !== undefined) {
-            do_next(null, result);
+            doNext(null, result);
         }
     };
 
     // We can call this.abort to finish at the next callback.
-    do_next.abort = function() {
+    doNext.abort = function() {
         // Clear the pending list.
-        all_calls = [];
+        allCalls = [];
 
         // This allows us to use abort in the idiom:
         // return this.abort();
@@ -100,17 +100,17 @@ var sequence = exports.sequence = function(opts) {
     };
 
     // Start it off.
-    do_next(null);
+    doNext(null);
 };
 
 /**
  * Creates a custom sequence that has the given fixed before and after
  * steps. This is useful for automating set-up, tear-down behavior.
  */
-exports.create_wrapped_sequence = function(before_steps, after_steps, opts) {
+exports.createWrappedSequence = function(beforeSteps, afterSteps, opts) {
     return function () {
         var args = Array.prototype.slice.call(arguments);
-        args = Array.prototype.concat(before_steps, args, after_steps);
+        args = Array.prototype.concat(beforeSteps, args, afterSteps);
         if (opts) args.unshift(opts);
         return sequence.apply(this, args);
     }

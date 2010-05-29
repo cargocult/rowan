@@ -12,17 +12,17 @@ var RowanResponseError = function(message) {
  * added to the response at any point up to its first write() or end()
  * call.
  */
-exports.RowanResponse = function(node_server_response) {
-    var nsr = node_server_response;
+exports.RowanResponse = function(nodeServerResponse) {
+    var nsr = nodeServerResponse;
     var response = Object.create(nsr);
 
-    var _sent_head = false;
+    var _sentHead = false;
     var _status = 200;
     var _headers = {};
 
     // New methods for deferred sending of the head.
-    response.set_status = function(status) {
-        if (_sent_head) {
+    response.setStatus = function(status) {
+        if (_sentHead) {
             throw new RowanResponseError(
                 "Can't set the status after having sent content."
             );
@@ -30,8 +30,8 @@ exports.RowanResponse = function(node_server_response) {
             _status = status;
         }
     };
-    response.add_headers = function(headers) {
-        if (_sent_head) {
+    response.addHeaders = function(headers) {
+        if (_sentHead) {
             throw new RowanResponseError(
                 "Can't set the status after having sent content."
             );
@@ -48,9 +48,9 @@ exports.RowanResponse = function(node_server_response) {
     // Override existing response methods:
     response.write = function() {
         // First make sure we write the head.
-        if (!_sent_head) {
+        if (!_sentHead) {
             nsr.writeHead.call(nsr, _status, _headers);
-            _sent_head = true;
+            _sentHead = true;
         }
 
         // Delegate this to our prototype.
@@ -59,13 +59,13 @@ exports.RowanResponse = function(node_server_response) {
     response.writeHead = function() {
         throw new RowanResponseError(
             "Rowan responses replace writeHead() with "+
-                "set_status() and add_headers()"
+                "setStatus() and addHeaders()"
         );
     };
     response.end = function() {
-        if (!_sent_head) {
+        if (!_sentHead) {
             nsr.writeHead.call(nsr, _status, _headers);
-            _sent_head = true;
+            _sentHead = true;
         }
         return nsr.end.apply(nsr, arguments);
     };

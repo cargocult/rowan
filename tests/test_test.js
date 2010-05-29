@@ -4,7 +4,7 @@
 var rowan = require("rowan");
 
 // Build a list of tests.
-var tests = {name:"test_test.js"};
+var tests = {name:"testTest.js"};
 
 tests.testSuccess = function(context) {
     return context.passed();

@@ -10,7 +10,7 @@
  * Part of the Rowan Microframework.
  * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
-exports.mime_types = types = {
+exports.mimeTypes = types = {
     ".3gp" : "video/3gpp",
     ".a" : "application/octet-stream",
     ".ai" : "application/postscript",
@@ -178,6 +178,6 @@ exports.mime_types = types = {
     ".zip" : "application/zip"
 };
 
-exports.for_extension = function(extension) {
+exports.forExtension = function(extension) {
     return types[extension.toLowerCase()] || 'application/octet-stream';
 };

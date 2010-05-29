@@ -40,14 +40,14 @@ exports.DataStore = DataStore = {
         var that = this;
 
         // Check if we've buffered that object already.
-        if (this._object_cache[uuid]) {
+        if (this._objectCache[uuid]) {
             // TODO: Check for out of date and invalidate the cache.
-            return callback(null, this._object_cache[uuid].object);
+            return callback(null, this._objectCache[uuid].object);
         }
 
         // Extract the JSON from the db.
-        var db = this._get_db();
-        db.getDoc(uuid, function(err, json_data) {
+        var db = this._getDb();
+        db.getDoc(uuid, function(err, jsonData) {
             if (err) {
                 if (err.error == "not_found") {
                     // Make the obvious error a little less terse.
@@ -63,8 +63,8 @@ exports.DataStore = DataStore = {
             }
 
             // Convert from json to final object (we know it is an
-            // object, so no need to call convert_from_db).
-            return that._convert_db_object(json_data, callback);
+            // object, so no need to call convertFromDb).
+            return that._convertDbObject(jsonData, callback);
         });
     },
 
@@ -85,7 +85,7 @@ exports.DataStore = DataStore = {
         }
 
         var json;
-        var cache_data = this._object_cache[object.id]
+        var cacheData = this._objectCache[object.id]
         var freeze = object.freeze;
 
         // Try to get the object to freeze itself into raw data.
@@ -103,15 +103,15 @@ exports.DataStore = DataStore = {
         // Add couch's data.
         json._id = json.id;
         delete json.id; // Don't store the id twice.
-        if (cache_data && cache_data.revision) {
-            json._rev = cache_data.revision;
+        if (cacheData && cacheData.revision) {
+            json._rev = cacheData.revision;
         }
 
         var that = this;
-        this._get_db().saveDoc(object.id, json, function(err, result) {
+        this._getDb().saveDoc(object.id, json, function(err, result) {
             if (!err) {
                 // Store the new revision, so we can write it again.
-                that._cache_loaded_object(object.id, result.rev, object);
+                that._cacheLoadedObject(object.id, result.rev, object);
             }
             callback(err);
         });
@@ -128,12 +128,12 @@ exports.DataStore = DataStore = {
         // We need the revision number in order to delete.
         var revision = null;
 
-        var db = this._get_db();
-        var cache_data = this._object_cache[uuid]
-        if (!cache_data) {
+        var db = this._getDb();
+        var cacheData = this._objectCache[uuid]
+        if (!cacheData) {
             // We don't have a version of it, so do we force through
             // the delete?
-            if (this._opts.force_overwrite) {
+            if (this._opts.forceOverwrite) {
                 db.getDoc(uuid, function(err, data) {
                     if (err) return callback(err);
                     db.removeDoc(uuid, data._rev, callback);
@@ -142,15 +142,15 @@ exports.DataStore = DataStore = {
                 callback({
                     name:"DataStoreDeleteError",
                     message:"Can't delete unloaded object "+
-                        "(without force_overwrite)."
+                        "(without forceOverwrite)."
                 });
             }
         } else {
             // We have a revision, try to use it.
-            db.removeDoc(uuid, cache_data.revision, function(err) {
+            db.removeDoc(uuid, cacheData.revision, function(err) {
                 if (err) {
                     if (err.rerror == "conflict" &&
-                        that._opts.force_overwrite) {
+                        that._opts.forceOverwrite) {
                         // Load the revision just so we can delete.
                         db.getDoc(uuid, function(err, data) {
                             if (err) return callback(err);
@@ -164,15 +164,15 @@ exports.DataStore = DataStore = {
                 }
             });
 
-            delete this._object_cache[uuid];
+            delete this._objectCache[uuid];
         }
     },
 
     /**
      * Retrieve a list of objects that match the given query. See the
-     * register_index method for details of these calls.
+     * registerIndex method for details of these calls.
      */
-    query: function(index_name, criteria, callback, opts) {
+    query: function(indexName, criteria, callback, opts) {
         if (!callback) throw CallbackRequiredError;
 
         var that = this;
@@ -185,20 +185,20 @@ exports.DataStore = DataStore = {
         }
 
         // Make sure the index has been sent to the DB.
-        var index = this._indices[index_name];
+        var index = this._indices[indexName];
         if (!index.registered) {
             return callback({
                 name:"DataStoreQueryError",
                 message:"Can't query an index until it has been created, "+
-                    "call create_indices first."
+                    "call createIndices first."
             });
         }
 
         // We'll subtract from the count to see if any unused criteria remain.
-        var criteria_count = 0;
-        for (var criterion_name in criteria) {
-            if (criteria.hasOwnProperty(criterion_name)) {
-                criteria_count++;
+        var criteriaCount = 0;
+        for (var criterionName in criteria) {
+            if (criteria.hasOwnProperty(criterionName)) {
+                criteriaCount++;
             }
         }
 
@@ -212,13 +212,13 @@ exports.DataStore = DataStore = {
             if (criteria[option]) {
                 // Add this criteria's value to the startkey.
                 startkey.push(criteria[option]);
-                criteria_count--;
+                criteriaCount--;
             } else {
                 // We have no more criteria matching our options.
                 break;
             }
         }
-        if (criteria_count) {
+        if (criteriaCount) {
             // We have some criteria that were out of sequence for the
             // options declared in the index, this is an error.
             return callback({
@@ -235,9 +235,9 @@ exports.DataStore = DataStore = {
         query.endkey = startkey.concat("\u9999"); // Is there a better way?
 
         // Run the query
-        var db = this._get_db();
+        var db = this._getDb();
         db.view(
-            this._opts.index_dd, index_name, query,
+            this._opts.indexDd, indexName, query,
             function(err, result) {
                 if (err) return callback(err);
 
@@ -248,7 +248,7 @@ exports.DataStore = DataStore = {
                 });
 
                 // Thaw and return them.
-                that._convert_db_array(objects, callback);
+                that._convertDbArray(objects, callback);
             }
         );
     },
@@ -265,7 +265,7 @@ exports.DataStore = DataStore = {
     wipe: function(callback) {
         if (!callback) throw CallbackRequiredError;
 
-        var db = this._get_db();
+        var db = this._getDb();
         db.exists(function(err, bool) {
             if (bool) {
                 db.remove(function(err) {
@@ -276,7 +276,7 @@ exports.DataStore = DataStore = {
                 db.create(callback);
             }
         });
-        this._object_cache = {};
+        this._objectCache = {};
     },
 
     /**
@@ -286,17 +286,17 @@ exports.DataStore = DataStore = {
     destroy: function(callback) {
         if (!callback) throw CallbackRequiredError;
 
-        this._get_db().remove(callback);
+        this._getDb().remove(callback);
     },
 
     /**
      * Tells the data store that objects it finds with the given
-     * type_id should be made into a ready-to-use object by the given
+     * typeId should be made into a ready-to-use object by the given
      * thaw function. The thaw function can perform arbitrary
      * transformations.
      */
-    register_type: function(type_id, thaw_fn) {
-        this._type_to_thaw_fn[type_id] = thaw_fn;
+    registerType: function(typeId, thawFn) {
+        this._typeToThawFn[typeId] = thawFn;
     },
 
     /**
@@ -308,13 +308,13 @@ exports.DataStore = DataStore = {
      * strings, representing the properties that you may want to query
      * on. The order is very significant, you can only query on the
      * first 'n' of these properties. So you could query
-     * {world:my_world, player:bob.id}, or {world:my_world} or even
+     * {world:myWorld, player:bob.id}, or {world:myWorld} or even
      * {}, but not {player: bob.id}. You may need to specify multiple
      * indices to capture all combinations of search you want to
      * perform. Note also, that when querying you have to query for
      * the underlying JSON representation, and not the thawed objects.
      */
-    register_index: function(index_name, required /*... optional+ ...*/) {
+    registerIndex: function(indexName, required /*... optional+ ...*/) {
         var optional = Array.prototype.slice.call(arguments, 2);
 
         // Compile the boolean expression to test if a document
@@ -340,17 +340,17 @@ exports.DataStore = DataStore = {
         }
 
         // Compile the map function
-        var map_fn = "function(doc) { ";
+        var mapFn = "function(doc) { ";
         if (criteria) {
-            map_fn += "if ("+criteria+") ";
+            mapFn += "if ("+criteria+") ";
         }
-        map_fn += "emit(["+emit+"], doc); }";
+        mapFn += "emit(["+emit+"], doc); }";
 
         // Store it, until we get the call to create indices.
-        this._indices[index_name] = {
+        this._indices[indexName] = {
             required: required,
             optional: optional,
-            map_fn_str: map_fn,
+            mapFnStr: mapFn,
             registered: false
         };
     },
@@ -364,30 +364,30 @@ exports.DataStore = DataStore = {
      * with signature function(err). If the callback receives no
      * error, then the indices were created correctly.
      */
-    create_indices: function(callback) {
+    createIndices: function(callback) {
         if (!callback) throw CallbackRequiredError;
 
         var that = this;
 
         // Create the design document.
         var dd = {
-            _id:"_design/"+this._opts.index_dd,
+            _id:"_design/"+this._opts.indexDd,
             views: {}
         };
 
         // Add in our views
-        for (var index_name in this._indices) {
-            var index = this._indices[index_name];
-            dd.views[index_name] = {
-                map: index.map_fn_str
+        for (var indexName in this._indices) {
+            var index = this._indices[indexName];
+            dd.views[indexName] = {
+                map: index.mapFnStr
             };
         };
 
         // Now we can't just push this DD to couch, because it might
         // conflict with one already there. We have to find the
         // revision of the current version before we can remove it.
-        var db = this._get_db();
-        db.getDoc(dd._id, function(err, old_design_doc) {
+        var db = this._getDb();
+        db.getDoc(dd._id, function(err, oldDesignDoc) {
             // We're expecting a not found error (if the design
             // document isn't there already).
             if (err) {
@@ -396,7 +396,7 @@ exports.DataStore = DataStore = {
                 }
             } else {
                 // TODO: Check for identical DD and don't save.
-                dd._rev = old_design_doc._rev;
+                dd._rev = oldDesignDoc._rev;
             }
 
             db.saveDoc(dd._id, dd, function(err) {
@@ -406,8 +406,8 @@ exports.DataStore = DataStore = {
                 // registered (we use the dd.views to loop in case
                 // more indices have been added to this._indices while
                 // we waited for our callback).
-                for (var index_name in dd.views) {
-                    that._indices[index_name].registered = true;
+                for (var indexName in dd.views) {
+                    that._indices[indexName].registered = true;
                 }
                 return callback();
             });
@@ -423,31 +423,31 @@ exports.DataStore = DataStore = {
      *
      * - host: Where CouchDB is running, default 'localhost'.
      *
-     * - index_dd: The name of the Design Document to store our indices,
-     *             default 'query_indices'.
+     * - indexDd: The name of the Design Document to store our indices,
+     *             default 'queryIndices'.
      *
-     * - force_overwrite: Forces the system to ignore MVCC tags in
+     * - forceOverwrite: Forces the system to ignore MVCC tags in
      *   couch, and always overwrite or delete documents, even when we
      *   don't have their latest revisions.
      */
-    create: function(database_name, opts) {
-        var my_opts = {
+    create: function(databaseName, opts) {
+        var myOpts = {
             port: 5984,
             host: "localhost",
-            index_dd: "query_indices",
-            force_overwrite: false
+            indexDd: "queryIndices",
+            forceOverwrite: false
         };
         for (var opt in opts) {
             if (opts.hasOwnProperty(opt)) {
-                my_opts[opt] = opts[opt];
+                myOpts[opt] = opts[opt];
             }
         }
 
         var obj = Object.create(DataStore);
-        obj._database_name = database_name;
-        obj._opts = my_opts;
-        obj._object_cache = {};
-        obj._type_to_thaw_fn = {};
+        obj._databaseName = databaseName;
+        obj._opts = myOpts;
+        obj._objectCache = {};
+        obj._typeToThawFn = {};
         obj._indices = {};
 
         return obj;
@@ -461,14 +461,14 @@ exports.DataStore = DataStore = {
     /**
      * Makes sure we have a valid client and returns the DB wrapper object.
      */
-    _get_db: function() {
-        if (!this._couch_client) {
+    _getDb: function() {
+        if (!this._couchClient) {
             // Might storing this forever mean it gets lost and crashes?
-            this._couch_client = couchdb.createClient(
+            this._couchClient = couchdb.createClient(
                 this._opts.port, this._opts.host
             );
         }
-        return this._couch_client.db(this._database_name);
+        return this._couchClient.db(this._databaseName);
     },
 
     /**
@@ -476,16 +476,16 @@ exports.DataStore = DataStore = {
      * converts it into its equivalent data structure with thawed
      * elements. This method can cope with any type.
      */
-    _convert_from_db: function(db_element, callback) {
-        if (!db_element || !(typeof db_element == 'object')) {
+    _convertFromDb: function(dbElement, callback) {
+        if (!dbElement || !(typeof dbElement == 'object')) {
             // Non-objects get returned without change.
-            callback(null, db_element);
-        } else if (db_element.constructor == Array) {
+            callback(null, dbElement);
+        } else if (dbElement.constructor == Array) {
             // Arrays get treated specially.
-            this._convert_db_array(db_element, callback);
+            this._convertDbArray(dbElement, callback);
         } else {
             // We have a general object.
-            this._convert_db_object(db_element, callback);
+            this._convertDbObject(dbElement, callback);
         }
     },
 
@@ -493,34 +493,34 @@ exports.DataStore = DataStore = {
      * Given a document retrieved from the database, this method
      * converts it to a full thawed data structures.
      */
-    _convert_db_object: function(db_object, callback) {
+    _convertDbObject: function(dbObject, callback) {
         var that = this;
 
-        var thaw_fn;
-        if (db_object.type) {
+        var thawFn;
+        if (dbObject.type) {
             // We were given a type, so we should have a thaw function.
-            thaw_fn = this._type_to_thaw_fn[db_object.type];
+            thawFn = this._typeToThawFn[dbObject.type];
 
-            if (thaw_fn === null) {
+            if (thawFn === null) {
                 // Thaw functions can be null, to say "I'm expecting
                 // things with such-and-such a type, but don't worry about
                 // finding a thaw function."""
-                thaw_fn = this._default_thaw_handler;
-            } else if (!thaw_fn) {
+                thawFn = this._defaultThawHandler;
+            } else if (!thawFn) {
                 // We found a type, weren't told we could ignore
                 // it, and don't have a way of handling it.
                 return callback({
                     name:"LoadObjectError",
-                    message:"Can't thaw type: '"+db_object.type+"'."
+                    message:"Can't thaw type: '"+dbObject.type+"'."
                 });
             }
         } else {
             // We don't have a type so we use the default thaw.
-            thaw_fn = this._default_thaw_handler;
+            thawFn = this._defaultThawHandler;
         }
 
         // Thaw the object with whatever function we found.
-        return this._do_thaw(thaw_fn, db_object, callback);
+        return this._doThaw(thawFn, dbObject, callback);
     },
 
     /**
@@ -528,69 +528,69 @@ exports.DataStore = DataStore = {
      * converts it, and its contents, into full thawed data
      * structures.
      */
-    _convert_db_array: function(db_array, callback) {
+    _convertDbArray: function(dbArray, callback) {
         var that = this;
 
         // Take a copy of the array so we can delete items as we
         // process them. We reverse it so we can pop elements in
         // order.
-        var array_copy = [];
-        db_array.forEach(function(element) {
-            array_copy.push(element);
+        var arrayCopy = [];
+        dbArray.forEach(function(element) {
+            arrayCopy.push(element);
         });
-        array_copy.reverse();
+        arrayCopy.reverse();
 
         // Recursively transform each element through the
-        // convert_from_db method.
+        // convertFromDb method.
         var result = [];
-        var do_next = function() {
-            var next = array_copy.pop();
+        var doNext = function() {
+            var next = arrayCopy.pop();
             if (next) {
-                that._convert_from_db(next, function(err, object) {
+                that._convertFromDb(next, function(err, object) {
                     if (err) return callback(err);
                     else {
                         result.push(object);
-                        if (array_copy) do_next();
+                        if (arrayCopy) doNext();
                     }
                 });
             } else {
                 callback(null, result);
             }
         };
-        do_next();
+        doNext();
     },
 
     /**
      * If a type doesn't have a thaw handler registered, this function
      * will do the job.
      */
-    _default_thaw_handler: function(raw_data, context) {
-        var new_object = {};
+    _defaultThawHandler: function(rawData, context) {
+        var newObject = {};
 
         // Go through each field and notify the context that we want
         // to thaw it.
-        for (var property in raw_data) {
-            if (raw_data.hasOwnProperty(property)) {
+        for (var property in rawData) {
+            if (rawData.hasOwnProperty(property)) {
                 if (property == '_id' || property == '_rev') continue;
-                context.thaw(new_object, property, raw_data[property]);
+                context.thaw(newObject, property, rawData[property]);
             }
         }
 
-        return new_object;
+        return newObject;
     },
 
     /**
      * Decodes the given json data into a full object.
      */
-    _do_thaw: function(thaw_fn, raw_data, callback) {
+    _doThaw: function(thawFn, rawData, callback) {
         var that = this;
 
         // When thawing, our thaw function can specify properties it
         // thinks also need thawing, and those it needs replacing by
         // loaded content.
-        var properties_to_thaw = [];
-        var properties_to_load = {};
-        var uuids_to_load = [];
+        var propertiesToThaw = [];
+        var propertiesToLoad = {};
+        var uuidsToLoad = [];
 
         var context = {
             // The thaw function can see who's trying to do the
@@ -600,7 +600,7 @@ exports.DataStore = DataStore = {
             // A function that allows thaw routines to schedule the
             // loading and connecting further objects in the database.
             load: function(object, property, uuid) {
-                var record = that._object_cache[uuid];
+                var record = that._objectCache[uuid];
 
                 if (record) {
                     // We've got the object already so triviall wire it
@@ -608,60 +608,60 @@ exports.DataStore = DataStore = {
                     object[property] = record.object;
                 } else {
                     // Store the wiring request for later.
-                    if (properties_to_load[uuid]) {
-                        properties_to_load[uuid].push([object, property]);
+                    if (propertiesToLoad[uuid]) {
+                        propertiesToLoad[uuid].push([object, property]);
                     } else {
-                        properties_to_load[uuid] = [[object, property]];
-                        uuids_to_load.push(uuid);
+                        propertiesToLoad[uuid] = [[object, property]];
+                        uuidsToLoad.push(uuid);
                     }
                 }
             },
 
             // A function that allows thaw routines to work
             // recursively: having their data thawed in turn.
-            thaw: function(object, property, raw_value) {
-                properties_to_thaw.push([object, property, raw_value]);
+            thaw: function(object, property, rawValue) {
+                propertiesToThaw.push([object, property, rawValue]);
             }
         };
 
         // Get the thaw routine to create us a new object.
-        var thawed_object = thaw_fn(raw_data, context);
+        var thawedObject = thawFn(rawData, context);
 
         // Cache it now, so that our recursive algorithms below don't
         // try to load it again when it sees a reference to it.
-        if (raw_data._id && raw_data._rev) {
-            that._cache_loaded_object(
-                raw_data._id, raw_data._rev, thawed_object
+        if (rawData._id && rawData._rev) {
+            that._cacheLoadedObject(
+                rawData._id, rawData._rev, thawedObject
             );
         }
 
         // The recursive method that can thaw into a property.
-        var do_next_thaw = function() {
-            var next_property = properties_to_thaw.pop();
+        var doNextThaw = function() {
+            var nextProperty = propertiesToThaw.pop();
             // When we're done here, we're done for good.
-            if (!next_property) return callback(null, thawed_object);
+            if (!nextProperty) return callback(null, thawedObject);
 
-            var object = next_property[0];
-            var property = next_property[1];
-            var raw_datum = next_property[2];
-            that._convert_from_db(raw_datum, function(err, converted) {
+            var object = nextProperty[0];
+            var property = nextProperty[1];
+            var rawDatum = nextProperty[2];
+            that._convertFromDb(rawDatum, function(err, converted) {
                 if (err) return callback(err);
                 object[property] = converted;
-                do_next_thaw();
+                doNextThaw();
             });
         };
         // The recursive method that loads the required uuids.
-        var do_next_uuid = function() {
-            var next_uuid = uuids_to_load.pop();
+        var doNextUuid = function() {
+            var nextUuid = uuidsToLoad.pop();
             // When we're done here, we go on to process the thaw
             // properties.
-            if (!next_uuid) return do_next_thaw();
+            if (!nextUuid) return doNextThaw();
 
-            that.get(next_uuid, function(err, result) {
+            that.get(nextUuid, function(err, result) {
                 if (err) return callback(err);
 
                 // Process the writing for this uuid.
-                var wirings = properties_to_load[next_uuid];
+                var wirings = propertiesToLoad[nextUuid];
                 for (var i = 0; i < wirings.length; i++) {
                     var spec = wirings[i];
                     var obj = spec[0];
@@ -670,22 +670,22 @@ exports.DataStore = DataStore = {
                 }
 
                 // Recurse onto the remaining uuids.
-                do_next_uuid();
+                doNextUuid();
             });
         };
         // Start with the first uuid
-        do_next_uuid();
+        doNextUuid();
     },
 
     /**
      * Caches the given object in the data store, so that future
      * loads find it.
      */
-    _cache_loaded_object: function(uuid, revision, object) {
-        this._object_cache[uuid] = {
+    _cacheLoadedObject: function(uuid, revision, object) {
+        this._objectCache[uuid] = {
             object: object,
             revision: revision,
-            up_to_date: timestamp()
+            upToDate: timestamp()
         };
     }
 };

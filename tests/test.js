@@ -16,13 +16,13 @@ var rowan = require("rowan");
 // We are building a complete test-suite.
 var suite = new rowan.utils.test.TestSuite(
     [], // We'll add tests below.
-    {handle_errors:true, output:'normal'}
+    {handleErrors:true, output:'normal'}
 );
 
 // Accumulate the tests from each module.
-suite.add_suite(require('./test_test').getTests());
-suite.add_suite(require('./test_uuid').getTests());
-suite.add_suite(require('./test_db_couch').getTests());
+suite.addSuite(require('./test_test').getTests());
+suite.addSuite(require('./test_uuid').getTests());
+suite.addSuite(require('./test_db_couch').getTests());
 
 // Run the test system.
 suite.run();

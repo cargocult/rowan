@@ -4,13 +4,13 @@
  * http.STATUS_CODE object, but this is more comprehensive.
  *
  * H/T: I scraped this list from the Wikipedia entry at
- * http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+ * http://en.wikipedia.org/wiki/ListOf_HTTP_statusCodes
  */
 /*
  * Part of the Rowan Microframework.
  * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
-exports.http_status_codes = {
+exports.httpStatusCodes = {
  100: 'Continue',
  101: 'Switching Protocols',
  102: 'Processing',

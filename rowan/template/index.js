@@ -28,13 +28,13 @@ var sys = require('sys');
 var fs = require('fs');
 var core = require('../core');
 
-var template_cache = {};
+var templateCache = {};
 
 /**
  * Flushes the template cache.
  */
-exports.flush_cache = function () {
-    template_cache = {};
+exports.flushCache = function () {
+    templateCache = {};
 };
 
 /**
@@ -47,13 +47,13 @@ exports.flush_cache = function () {
  * from the cache. A call to load() updates, but does not query the
  * cache.
  */
-exports.load = load = function(template_path, callback) {
-    fs.readFile(template_path, function (err, content) {
+exports.load = load = function(templatePath, callback) {
+    fs.readFile(templatePath, function (err, content) {
         if (err) callback(err);
         else {
             // Place it in the cache before returning.
             template = compile(content.toString());
-            template_cache[template_path] = template;
+            templateCache[templatePath] = template;
             callback(null, template);
         }
     });
@@ -67,11 +67,11 @@ exports.load = load = function(template_path, callback) {
  * also caches templates so they aren't recompiled each time they are
  * used.
  */
-exports.get = get = function(template_path, callback) {
+exports.get = get = function(templatePath, callback) {
     // Pull the template from the cache if we can, otherwise load it.
-    var template = template_cache[template_path];
+    var template = templateCache[templatePath];
     if (template) callback(null, template);
-    else load(template_path, callback);
+    else load(templatePath, callback);
 };
 
 /**
@@ -79,8 +79,8 @@ exports.get = get = function(template_path, callback) {
  * template loading is asynchronous, this function takes a callback
  * function of two args: an error, or the rendered template.
  */
-exports.render = function(template_path, data, callback) {
-    get(template_path, function (err, template) {
+exports.render = function(templatePath, data, callback) {
+    get(templatePath, function (err, template) {
         if (err) callback(err);
         else callback(null, template(data));
     });
@@ -94,14 +94,14 @@ exports.render = function(template_path, data, callback) {
  * template, which can have data merged with it by calling it with an
  * object of data.
  */
-exports.compile = compile = function(template_text) {
+exports.compile = compile = function(templateText) {
     // Create the source for our template function from the template text
     var source = "var output = []; "+
         "var print = function(content) { output.push(content); }; "+
         "with (data) { output.push('" +
 
         // Convert the special tag characters into code.
-        template_text
+        templateText
             .split('\r').join("\\r") // We can't split strings across lines
             .split('\n').join("\\n")
             .split("'").join("\\'") // We need single quotes, so escape them

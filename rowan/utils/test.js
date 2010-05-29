@@ -6,10 +6,10 @@ var sys = require("sys");
 var event = require("events");
 
 // Simple function for english plurals, only used in this file.
-var plural = function(number, text, plural_form) {
+var plural = function(number, text, pluralForm) {
     if (number == 1) return "1 "+text;
-    else if (!plural_form) return number+" "+text+"s";
-    else return number+" "+plural_form;
+    else if (!pluralForm) return number+" "+text+"s";
+    else return number+" "+pluralForm;
 };
 
 /**
@@ -27,7 +27,7 @@ sys.inherits(TestError, Error);
  * tests given should be a list of objects, each object should have
  * the form:
  *
- *     {test_function: function(context) { ... },
+ *     {testFunction: function(context) { ... },
  *      name: "human readable string",
  *      self:..., args:[..]}
  *
@@ -43,11 +43,11 @@ sys.inherits(TestError, Error);
  *     "normal" for regular, terse, output, or "verbose" for full
  *     output.
  *
- * bash_colors: If true, then any output will be displayed with
+ * bashColors: If true, then any output will be displayed with
  *     colors. This may not work if your shell doesn't use
  *     bash-compatible color escape codes.
  *
- * handle_errors: Normally if an error is thrown during testing, the
+ * handleErrors: Normally if an error is thrown during testing, the
  *     test framework copes and treats it as an error event. This can
  *     hide the stacktrace. If this is false then the error is allowed
  *     to propagate normally.
@@ -72,25 +72,25 @@ sys.inherits(TestError, Error);
  * complete: Emitted when the testing process is complete with 1
  *     argument which is the test suite.
  */
-function TestSuite(tests_to_run, opts) {
+function TestSuite(testsToRun, opts) {
     event.EventEmitter.call(this);
 
     // Override default options with specified options.
     this.opts = {
         output: "normal",
-        bash_colors: true,
-        handle_errors: true
+        bashColors: true,
+        handleErrors: true
     };
     for (var opt in opts) this.opts[opt] = opts[opt];
 
     // Configure starting data.
-    this.has_run = false;
-    this.tests_to_run = [];
-    if (tests_to_run) this.add_tests(tests_to_run);
+    this.hasRun = false;
+    this.testsToRun = [];
+    if (testsToRun) this.addTests(testsToRun);
 
     // Set up for color, if we need it
     var RED="", NO_COLOR="", GREEN="";
-    if (this.opts.bash_colors) {
+    if (this.opts.bashColors) {
         GREEN = "\u001b[32m";
         RED = "\u001b[31m";
         NO_COLOR = "\u001b[0m";
@@ -100,25 +100,25 @@ function TestSuite(tests_to_run, opts) {
     if (this.opts.output) {
 
         if (this.opts.output != "quiet") {
-            this.addListener("pass", function(test_defn, suite) {
+            this.addListener("pass", function(testDefn, suite) {
                 if (this.opts.output == "verbose") {
-                    sys.puts(GREEN+"Passed: "+test_defn.name+NO_COLOR);
+                    sys.puts(GREEN+"Passed: "+testDefn.name+NO_COLOR);
                 } else {
                     sys.print(GREEN+"."+NO_COLOR);
                 }
             });
-            this.addListener("fail", function(test_defn, suite) {
+            this.addListener("fail", function(testDefn, suite) {
                 if (this.opts.output == "verbose") {
-                    sys.puts(RED+"FAILED: "+test_defn.name+NO_COLOR);
-                    sys.puts(" - "+test_defn.fail_message.toString());
+                    sys.puts(RED+"FAILED: "+testDefn.name+NO_COLOR);
+                    sys.puts(" - "+testDefn.failMessage.toString());
                 } else {
                     sys.print(RED+"X"+NO_COLOR);
                 }
             });
-            this.addListener("err", function(test_defn, suite) {
+            this.addListener("err", function(testDefn, suite) {
                 if (this.opts.output == "verbose") {
-                    sys.puts(RED+"ERROR: "+test_defn.name+NO_COLOR);
-                    sys.puts(" - "+test_defn.error.toString());
+                    sys.puts(RED+"ERROR: "+testDefn.name+NO_COLOR);
+                    sys.puts(" - "+testDefn.error.toString());
                 } else {
                     sys.print(RED+"E"+NO_COLOR);
                 }
@@ -128,8 +128,8 @@ function TestSuite(tests_to_run, opts) {
             this.addListener("start", function(suite) {
                 sys.puts("Beginning tests.");
             });
-            this.addListener("test", function(test_defn, suite) {
-                sys.puts("Beginning test: "+test_defn.name);
+            this.addListener("test", function(testDefn, suite) {
+                sys.puts("Beginning test: "+testDefn.name);
             });
         }
         this.addListener("complete", function(suite) {
@@ -139,16 +139,16 @@ function TestSuite(tests_to_run, opts) {
                 if (this.opts.output == "normal") {
                     // Output the errors and failures now, we didn't
                     // as we went along.
-                    for (var i = 0; i < suite.tests_to_run.length; ++i) {
-                        var test_defn = suite.tests_to_run[i];
-                        switch (test_defn.result) {
+                    for (var i = 0; i < suite.testsToRun.length; ++i) {
+                        var testDefn = suite.testsToRun[i];
+                        switch (testDefn.result) {
                         case 'fail':
-                            sys.puts(RED+"FAILED: "+test_defn.name+NO_COLOR);
-                            sys.puts(" - "+test_defn.fail_message.toString());
+                            sys.puts(RED+"FAILED: "+testDefn.name+NO_COLOR);
+                            sys.puts(" - "+testDefn.failMessage.toString());
                             break;
                         case 'error':
-                            sys.puts(RED+"ERROR: "+test_defn.name+NO_COLOR);
-                            sys.puts(" - "+JSON.stringify(test_defn.error));
+                            sys.puts(RED+"ERROR: "+testDefn.name+NO_COLOR);
+                            sys.puts(" - "+JSON.stringify(testDefn.error));
                             break;
                         }
                     }
@@ -179,22 +179,22 @@ sys.inherits(TestSuite, event.EventEmitter);
  * Adds any number of additional tests to this suite. The tests given
  * should be in the same form as those given to the constructor.
  */
-TestSuite.prototype.add_tests = function(tests_to_run) {
-    if (this.has_run) {
+TestSuite.prototype.addTests = function(testsToRun) {
+    if (this.hasRun) {
         throw new TestError("Can't add tests after they've been run.");
     }
-    for (var i = 0; i < tests_to_run.length; i++) {
-        var test_defn = tests_to_run[i];
+    for (var i = 0; i < testsToRun.length; i++) {
+        var testDefn = testsToRun[i];
 
         // Make a copy of the test definition so we can store some
         // local data in it.
-        var my_defn = {};
-        for (var key in test_defn) {
-            my_defn[key] = test_defn[key];
+        var myDefn = {};
+        for (var key in testDefn) {
+            myDefn[key] = testDefn[key];
         }
 
         // Store it for later running.
-        this.tests_to_run.push(my_defn);
+        this.testsToRun.push(myDefn);
     }
 };
 
@@ -202,11 +202,11 @@ TestSuite.prototype.add_tests = function(tests_to_run) {
  * Adds another test suite to this one. The options and event
  * listeners of the given test suite will be ignored.
  */
-TestSuite.prototype.add_suite = function(other_suite) {
-    if (this.has_run) {
+TestSuite.prototype.addSuite = function(otherSuite) {
+    if (this.hasRun) {
         throw new TestError("Can't add tests after they've been run.");
     }
-    this.add_tests(other_suite.tests_to_run);
+    this.addTests(otherSuite.testsToRun);
 }
 
 /**
@@ -221,18 +221,18 @@ TestSuite.prototype.run = function() {
     this.started = 0;
 
     this.emit("start", this);
-    for (var i = 0; i < this.tests_to_run.length; i++) {
-        var test_defn = this.tests_to_run[i];
+    for (var i = 0; i < this.testsToRun.length; i++) {
+        var testDefn = this.testsToRun[i];
 
         // Build the argument list for the test.
-        var context = new TestContext(test_defn, this);
+        var context = new TestContext(testDefn, this);
         var args = [context];
-        if (test_defn.args) {
-            args = args.concat(test_defn.args);
+        if (testDefn.args) {
+            args = args.concat(testDefn.args);
         }
 
         // Create the "this" pointer.
-        var self = test_defn.self;
+        var self = testDefn.self;
         if (self === undefined) { // Only undefined, so user can specify null.
             self = context;
         }
@@ -240,20 +240,20 @@ TestSuite.prototype.run = function() {
         // Run the test
         ++this.running;
         ++this.started;
-        test_defn.running = true;
+        testDefn.running = true;
 
-        this.emit("test", test_defn, this);
+        this.emit("test", testDefn, this);
 
-        if (this.opts.handle_errors) {
+        if (this.opts.handleErrors) {
             try {
-                test_defn.test_function.apply(self, args);
+                testDefn.testFunction.apply(self, args);
             } catch (err) {
-                if (test_defn.running) {
+                if (testDefn.running) {
                     context.error(err);
                 }
             }
         } else {
-            test_defn.test_function.apply(self, args);
+            testDefn.testFunction.apply(self, args);
         }
     }
 };
@@ -261,8 +261,8 @@ TestSuite.prototype.run = function() {
 /**
  * Returns true if all the tests have run to completion.
  */
-TestSuite.prototype.is_complete = function() {
-    return this.running == 0 && this.started == this.tests_to_run.length;
+TestSuite.prototype.isComplete = function() {
+    return this.running == 0 && this.started == this.testsToRun.length;
 };
 
 /* Finishes up the test process after all tests are complete. */
@@ -277,26 +277,26 @@ TestSuite.prototype._finish = function() {
 TestSuite.prototype._passed = function(context) {
     ++this.passes;
     --this.running;
-    context.test_defn.result = 'pass';
-    context.test_defn.running = false;
-    this.emit("pass", context.test_defn, this);
-    if (this.is_complete()) this._finish();
+    context.testDefn.result = 'pass';
+    context.testDefn.running = false;
+    this.emit("pass", context.testDefn, this);
+    if (this.isComplete()) this._finish();
 };
 TestSuite.prototype._failed = function(context) {
     ++this.failures;
     --this.running;
-    context.test_defn.result = 'fail';
-    context.test_defn.running = false;
-    this.emit("fail", context.test_defn, this);
-    if (this.is_complete()) this._finish();
+    context.testDefn.result = 'fail';
+    context.testDefn.running = false;
+    this.emit("fail", context.testDefn, this);
+    if (this.isComplete()) this._finish();
 };
 TestSuite.prototype._error = function(context) {
     ++this.errors;
     --this.running;
-    context.test_defn.result = 'error';
-    context.test_defn.running = false;
-    this.emit("err", context.test_defn, this);
-    if (this.is_complete()) this._finish();
+    context.testDefn.result = 'error';
+    context.testDefn.running = false;
+    this.emit("err", context.testDefn, this);
+    if (this.isComplete()) this._finish();
 };
 
 
@@ -305,15 +305,15 @@ TestSuite.prototype._error = function(context) {
  * complete, or that some problem has occurred. It should not be
  * constructed manually.
  */
-function TestContext(test_defn, test_suite) {
-    this.test_defn = test_defn;
-    this.suite = test_suite;
+function TestContext(testDefn, testSuite) {
+    this.testDefn = testDefn;
+    this.suite = testSuite;
 };
 /**
  * Call this function if your test function is complete and passed.
  */
 TestContext.prototype.passed = function() {
-    if (!this.test_defn.running) {
+    if (!this.testDefn.running) {
         throw new TestError("Test context has already been given a result.");
     }
     this.suite._passed(this);
@@ -321,24 +321,24 @@ TestContext.prototype.passed = function() {
 /**
  * Call this function if your test function is complete but failed.
  */
-TestContext.prototype.failed = function(fail_message) {
-    if (!this.test_defn.running) {
+TestContext.prototype.failed = function(failMessage) {
+    if (!this.testDefn.running) {
         throw new TestError("Test context has already been given a result.");
     }
-    this.test_defn.fail_message = fail_message;
+    this.testDefn.failMessage = failMessage;
     this.suite._failed(this);
 };
 /**
  * Call this function if your test function crashes.
  */
 TestContext.prototype.error = function(error) {
-    if (!this.suite.opts.handle_errors) {
+    if (!this.suite.opts.handleErrors) {
         throw error;
     }
-    if (!this.test_defn.running) {
+    if (!this.testDefn.running) {
         throw new TestError("Test context has already been given a result.");
     }
-    this.test_defn.error = error;
+    this.testDefn.error = error;
     this.suite._error(this);
 };
 
@@ -348,19 +348,19 @@ TestContext.prototype.error = function(error) {
  */
 var getModuleTests = function(mod, opts) {
     // Accumualate the tests in the module.
-    var tests_to_run = [];
-    var export_names = Object.keys(mod);
-    for (var i = 0; i < export_names.length; i++) {
-        var export_name = export_names[i];
-        if (export_name.substr(0, 4) == "test") {
+    var testsToRun = [];
+    var exportNames = Object.keys(mod);
+    for (var i = 0; i < exportNames.length; i++) {
+        var exportName = exportNames[i];
+        if (exportName.substr(0, 4) == "test") {
             var definition = {};
-            definition.name = export_name + " in " + mod.name;
-            definition.test_function = mod[export_name];
-            tests_to_run.push(definition);
+            definition.name = exportName + " in " + mod.name;
+            definition.testFunction = mod[exportName];
+            testsToRun.push(definition);
         }
     }
 
-    return new TestSuite(tests_to_run, opts);
+    return new TestSuite(testsToRun, opts);
 };
 
 exports.getModuleTests = getModuleTests;

@@ -19,8 +19,8 @@ var createUUID = (function() {
     // We create and execute this outside function immediately. Doing
     // this provides us with a secure inner scope to store our uuid
     // cache, preventing other code from accessing it. The result of
-    // this outmost function call is to return the actual get_uuid()
-    // function which is assigned to the get_uuid name.
+    // this outmost function call is to return the actual getUuid()
+    // function which is assigned to the getUuid name.
 
     var UUIDError = function(message) {
         Error.call(this, message);

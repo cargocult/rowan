@@ -50,19 +50,19 @@ var controllers = rowan.controllers;
 // OUTPUT CONTROLLERS
 
 // A controller that shows how to render something to a template.
-var display_foo = controllers.create_template_renderer(
+var displayFoo = controllers.createTemplateRenderer(
     'templates/index.html',
     {title:'Hello World', items:['a', 'b', 'c']}
 );
 
 // A fallback controller based on elements in the URI.
-var display_bar = controllers.create_fallback([
+var displayBar = controllers.createFallback([
 
     // The first controller checks for the magic word.
     function (context, callback) {
-        if (/sesame/.test(context.remaining_path)) {
-            context.response.set_status(200);
-            context.response.add_headers({'Content-Type':'text/plain'});
+        if (/sesame/.test(context.remainingPath)) {
+            context.response.setStatus(200);
+            context.response.addHeaders({'Content-Type':'text/plain'});
             context.response.write("Opening...");
             context.response.end();
             callback(null);
@@ -74,25 +74,25 @@ var display_bar = controllers.create_fallback([
     },
 
     // The fallback controller asks for the magic word.
-    controllers.create_static_content("What's the magic word?")
+    controllers.createStaticContent("What's the magic word?")
 ]);
 
 
 // URLS
 
 // The URI fragments at the top level and the controllers they map to.
-var router = controllers.create_router([
+var router = controllers.createRouter([
     {
         pattern:/^foo\/$/,
-        view:display_foo
+        view:displayFoo
     },
     {
         pattern:/^bar\//,
-        view:display_bar
+        view:displayBar
     },
     {
         pattern:/^media\//,
-        view:controllers.create_file_server('media/')
+        view:controllers.createFileServer('media/')
     }
 ]);
 
@@ -100,5 +100,5 @@ var router = controllers.create_router([
 // ENTRY POINT
 
 // Create and run the server.
-var root = controllers.create_error_handler([500], router);
-rowan.create_server(root).listen(8080);
+var root = controllers.createErrorHandler([500], router);
+rowan.createServer(root).listen(8080);

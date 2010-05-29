@@ -8,18 +8,18 @@ var sys = require('sys');
 
 /**
  * A sequence wrapper that creates a database initially and can report
- * an error to the given test_runner. This sequence will clean up after
+ * an error to the given testRunner. This sequence will clean up after
  * itself on failure, so don't use this.abort() with this.
  */
-var test_sequence = function(test_runner) {
-    return rowan.utils.sequence.create_wrapped_sequence(
+var testSequence = function(testRunner) {
+    return rowan.utils.sequence.createWrappedSequence(
         [
             function() {
                 rowan.utils.uuid.createUUID(this);
             },
             function(err, uuid) {
                 if (err) {
-                    test_runner.error(err);
+                    testRunner.error(err);
                     return this.abort();
                 }
                 this.store = DataStore.create('test-'+uuid);
@@ -29,15 +29,15 @@ var test_sequence = function(test_runner) {
         [
             function(err) {
                 if (err) {
-                    test_runner.error(err);
+                    testRunner.error(err);
                 } else {
-                    test_runner.passed(err);
+                    testRunner.passed(err);
                 }
                 return true;
             }
         ],
         {
-            finally_do: function(err) {
+            finallyDo: function(err) {
                 if (this.store) {
                     this.store.destroy(this);
                 }
@@ -50,13 +50,13 @@ var test_sequence = function(test_runner) {
 var tests = {name:__filename};
 
 // Smoke test for just creating a database.
-tests.testCreateStore = function(test_runner) {
-    test_sequence(test_runner)();
+tests.testCreateStore = function(testRunner) {
+    testSequence(testRunner)();
 };
 
 // Test the simplest single data call.
-tests.testSetObject = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testSetObject = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-a", foo:1, bar:[1,2,3]}, this);
@@ -65,8 +65,8 @@ tests.testSetObject = function(test_runner) {
 };
 
 // Objects should be retrievable.
-tests.testGetObject = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testGetObject = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-b", foo:1, bar:[1,2,3]}, this);
@@ -79,11 +79,11 @@ tests.testGetObject = function(test_runner) {
             if (err) throw err;
 
             if (!data) {
-                test_runner.failed("No data returned.");
+                testRunner.failed("No data returned.");
                 return this.abort();
             }
             if (data.foo != 1 || data.bar[0] != 1 || data.bar.length != 3) {
-                test_runner.failed("Incorrect data returned.");
+                testRunner.failed("Incorrect data returned.");
                 return this.abort();
             }
             return true;
@@ -92,8 +92,8 @@ tests.testGetObject = function(test_runner) {
 };
 
 // Replace an old version with a new version.
-tests.testUpdate = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testUpdate = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-c", foo:1, bar:[1,2,3]}, this);
@@ -110,11 +110,11 @@ tests.testUpdate = function(test_runner) {
             if (err) throw err;
 
             if (!data) {
-                test_runner.failed("No data returned.");
+                testRunner.failed("No data returned.");
                 return this.abort();
             }
             if (data.foo != 2 && !data.bar && data.dock == 2) {
-                test_runner.failed("Incorrect data returned.");
+                testRunner.failed("Incorrect data returned.");
                 return this.abort();
             }
             return true;
@@ -124,8 +124,8 @@ tests.testUpdate = function(test_runner) {
 
 
 // Removing an object really removes it.
-tests.testRemove = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testRemove = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-d", foo:1, bar:[1,2,3]}, this);
@@ -140,7 +140,7 @@ tests.testRemove = function(test_runner) {
         },
         function(err, data) {
             if (!err || err.name != "NotInDatabaseError") {
-                test_runner.failed("Found data after delete.");
+                testRunner.failed("Found data after delete.");
                 return this.abort();
             }
             return true;
@@ -149,8 +149,8 @@ tests.testRemove = function(test_runner) {
 };
 
 // Wiping removes everything
-tests.testEmpty = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testEmpty = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-e", foo:1, bar:[1,2,3]}, this);
@@ -165,7 +165,7 @@ tests.testEmpty = function(test_runner) {
         },
         function(err, data) {
             if (!err || err.name != "NotInDatabaseError") {
-                test_runner.failed("Found data after wipe.");
+                testRunner.failed("Found data after wipe.");
                 return this.abort();
             }
             return true;
@@ -175,8 +175,8 @@ tests.testEmpty = function(test_runner) {
 
 // All object store methods should be run with a callback, even those
 // without a return value (in case of error).
-tests.testMustHaveCallback = function(test_runner) {
-    test_sequence(test_runner)(
+tests.testMustHaveCallback = function(testRunner) {
+    testSequence(testRunner)(
         function(err) {
             if (err) throw err;
             this.store.save({id:"object-e", foo:1, bar:[1,2,3]}, null);
@@ -184,7 +184,7 @@ tests.testMustHaveCallback = function(test_runner) {
         },
         function(err) {
             if (!err || err.name != "CallbackRequiredError") {
-                test_runner.failed(
+                testRunner.failed(
                     "Expecting an error when callback is missing."
                 );
                 return this.abort();

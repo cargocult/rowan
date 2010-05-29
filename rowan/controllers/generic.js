@@ -9,11 +9,11 @@ var core = require('../core');
 /**
  * A utility function that responds to a request in one call.
  */
-response_util = function (context, callback, content, content_type) {
-    content_type = content_type || 'text/plain';
+responseUtil = function (context, callback, content, contentType) {
+    contentType = contentType || 'text/plain';
 
-    context.response.set_status(200);
-    context.response.add_headers({"Content-Type":content_type});
+    context.response.setStatus(200);
+    context.response.addHeaders({"Content-Type":contentType});
 
     context.response.write(content);
     context.response.end();
@@ -24,9 +24,9 @@ response_util = function (context, callback, content, content_type) {
  * A controller that outputs the given content verbatim. The content type
  * will default to text/plain.
  */
-exports.create_static_content = function (content, content_type) {
+exports.createStaticContent = function (content, contentType) {
     return function (context, callback) {
-        response_util(context, callback, content, content_type);
+        responseUtil(context, callback, content, contentType);
     };
 };
 
@@ -38,18 +38,18 @@ exports.create_static_content = function (content, content_type) {
  * controller is actually called, so while the data object itself can't
  * change, its contents can.
  */
-exports.create_template_renderer =
-    function (template_name, data_object, content_type) {
-        var content_type = content_type || 'text/html';
+exports.createTemplateRenderer =
+    function (templateName, dataObject, contentType) {
+        var contentType = contentType || 'text/html';
         return function (context, callback) {
             // Render the template.
             template.render(
-                template_name, data_object,
+                templateName, dataObject,
                 function (err, result) {
                     if (err) callback(err);
                     else {
-                        response_util(
-                            context, callback, result, content_type
+                        responseUtil(
+                            context, callback, result, contentType
                         );
                     }
                 });
@@ -60,8 +60,8 @@ exports.create_template_renderer =
  * A controller that always generates an error. This can be useful for
  * debugging complex controller trees.
  */
-exports.create_error_generator = function (error_code, description) {
+exports.createErrorGenerator = function (errorCode, description) {
     return function (context, callback) {
-        callback(new core.errors.HttpError(error_code, description));
+        callback(new core.errors.HttpError(errorCode, description));
     };
 }

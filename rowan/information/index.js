@@ -1,7 +1,7 @@
 /**
- * This module provides dictionaries and lists of information, such as 
- * codes and mime-types. Anything that is a reference of static data should 
- * go in a sub-module here.
+ * This module provides dictionaries and lists of information, such as
+ * codes and mime-types. Anything that is a reference of static data
+ * should go in a sub-module here.
  */
 /*
  * Part of the Rowan Microframework.
@@ -9,5 +9,5 @@
  */
 
 // Expose sub-modules.
-exports.mime_types = require('./mime_types');
-exports.http_codes = require('./http_codes');
+exports.mimeTypes = require('./mime_types');
+exports.httpCodes = require('./http_codes');

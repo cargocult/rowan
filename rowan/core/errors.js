@@ -1,5 +1,5 @@
 /**
- * This module provides error constructors for Http errors such as 
+ * This module provides error constructors for Http errors such as
  * 404 Not Found, or 401 Unauthorized.
  */
 /*
@@ -7,7 +7,7 @@
  * Copyright (c) 2009 Ian Millington. See the LICENSE file for details.
  */
 var sys = require('sys');
-var http_codes = require('../information/http_codes');
+var httpCodes = require('../information/http_codes');
 
 /**
  * Creates a new error object for returning when a controller can't
@@ -15,13 +15,13 @@ var http_codes = require('../information/http_codes');
  * response codes are also provided.
  */
 exports.HttpError = HttpError = function(
-    status_code, description, headers, message
+    statusCode, description, headers, message
 ) {
     Error.call(this, message || "");
     this.name = "HttpError";
-    this.status_code = status_code;
+    this.statusCode = statusCode;
     this.description =
-        description || http_codes.http_status_codes[status_code] || "Unknown";
+        description || httpCodes.httpStatusCodes[statusCode] || "Unknown";
     this.headers = headers;
 }
 sys.inherits(HttpError, Error);

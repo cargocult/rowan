@@ -10,23 +10,23 @@ var errors = require('../core/errors');
  * first one that matches. The router calls-back with a Http404 error
  * if none match.
  */
-exports.create_router = function(routes) {
+exports.createRouter = function(routes) {
     return function(context, callback) {
-        var path = context.remaining_path;
+        var path = context.remainingPath;
         for (i in routes) {
             var route = routes[i];
             var match = route.pattern.exec(path)
             if (match) {
                 // Add any matched groups.
                 if (match.length > 1) {
-                    if (!('pattern_groups' in context)) {
-                        context.pattern_groups = [];
+                    if (!('patternGroups' in context)) {
+                        context.patternGroups = [];
                     }
-                    context.pattern_groups += match.slice(1);
+                    context.patternGroups += match.slice(1);
                 }
 
                 // Update the unprocessed path.
-                context.remaining_path =
+                context.remainingPath =
                     path.substr(match.index + match[0].length);
 
                 // Call the view.
@@ -47,13 +47,13 @@ exports.create_router = function(routes) {
  * argument can be used to specify a default sub-controller in case the
  * method isn't listed in the map.
  */
-exports.create_method_map = function(map, default_controller) {
+exports.createMethodMap = function(map, defaultController) {
     return function(context, callback) {
-        var sub_controller = map[context.request.method];
-        if (sub_controller) {
-            return sub_controller(context, callback);
-        } else if (default_controller) {
-            return default_controller(context, callback);
+        var subController = map[context.request.method];
+        if (subController) {
+            return subController(context, callback);
+        } else if (defaultController) {
+            return defaultController(context, callback);
         }
         callback(new errors.Http405());
     };
@@ -65,23 +65,23 @@ exports.create_method_map = function(map, default_controller) {
  * The method can be given a first, optional, argument which is a list of
  * error status codes not to handle.
  */
-exports.create_error_handler = function(unhandled_errors, sub_controller) {
+exports.createErrorHandler = function(unhandledErrors, subController) {
     // Swap arguments if we were only given one.
-    if (!sub_controller) {
-        sub_controller = unhandled_errors;
-        unhandled_errors = null;
+    if (!subController) {
+        subController = unhandledErrors;
+        unhandledErrors = null;
     }
 
     // A function to do the error response.
-    var handle_error = function(response, error) {
-        var status_code = error.status_code || 500;
-        if (!unhandled_errors || unhandled_errors.indexOf(status_code) < 0) {
+    var handleError = function(response, error) {
+        var statusCode = error.statusCode || 500;
+        if (!unhandledErrors || unhandledErrors.indexOf(statusCode) < 0) {
             var description = error.description || "Server Error";
 
-            response.set_status(status_code);
-            response.add_headers({'Content-Type':'text/html'});
+            response.setStatus(statusCode);
+            response.addHeaders({'Content-Type':'text/html'});
             response.write(
-                "<h1>"+status_code.toString()+" "+description+"</h1>"
+                "<h1>"+statusCode.toString()+" "+description+"</h1>"
             );
             response.end();
             return true;
@@ -91,8 +91,8 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
     };
 
     return function(context, callback) {
-        sub_controller(context, function(err) {
-            if (err && !handle_error(context.response, err)) {
+        subController(context, function(err) {
+            if (err && !handleError(context.response, err)) {
                 // Pass the error on up.
                 callback(err);
             } else {
@@ -114,34 +114,34 @@ exports.create_error_handler = function(unhandled_errors, sub_controller) {
  * the error from the last controller in the list will be passed
  * up. If no controllers are given, a Http 404 error is called-back.
  */
-exports.create_fallback = function(valid_errors, sub_controllers) {
+exports.createFallback = function(validErrors, subControllers) {
     // Swap arguments if we were only given one.
-    if (!sub_controllers) {
-        sub_controllers = valid_errors;
-        valid_errors = null;
+    if (!subControllers) {
+        subControllers = validErrors;
+        validErrors = null;
     }
 
     // Can this error be handled or does it need escalating?
-    var handle_error = function(err) {
-        return !valid_errors || valid_errors.indexOf(err.status_code) >= 0;
+    var handleError = function(err) {
+        return !validErrors || validErrors.indexOf(err.statusCode) >= 0;
     }
 
     return function(context, callback) {
         // Take a copy so we don't have changes when waiting for results.
-        var sub_controllers_copy = sub_controllers.slice();
+        var subControllersCopy = subControllers.slice();
 
         // The recursive function that tries to use one sub-controller and
         // recurses to further sub-controllers if it fails.
-        var process_controller = function(index) {
-            var sub_controller = sub_controllers_copy[index];
+        var processController = function(index) {
+            var subController = subControllersCopy[index];
 
-            sub_controller(context, function(err) {
+            subController(context, function(err) {
                 if (err) {
-                    if (handle_error(err)) {
+                    if (handleError(err)) {
                         // We could handle this error, do we have another
                         // controller to pass on to?
-                        if (index+1 < sub_controllers_copy.length) {
-                            process_controller(index+1);
+                        if (index+1 < subControllersCopy.length) {
+                            processController(index+1);
                         }
                     } else {
                         // We need to report this error.
@@ -156,13 +156,13 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
 
         // Start by trying the base controller, and let it recurse from
         // there.
-        if (sub_controllers_copy) process_controller(0);
+        if (subControllersCopy) processController(0);
         else callback(new errors.Http404());
     };
 };
 
 /**
- * Makes the given data object visible to the sub_controller and its
+ * Makes the given data object visible to the subController and its
  * children, removing it before we back out of the tree past this
  * point again. Any data not explicitly overwritten in this data
  * structure will be retained.
@@ -173,23 +173,23 @@ exports.create_fallback = function(valid_errors, sub_controllers) {
  * {b:1, c:2}, however, and you pass {d:3}, then the subtree will see
  * 'b', 'c', and 'd'.
  */
-exports.create_subtree_data = function(data, sub_controller) {
+exports.createSubtreeData = function(data, subController) {
     return function(context, callback) {
         // Copy the data we're given, with the current data as its
         // prototype.
-        var old_data = context.data;
-        var new_data = Object.create(old_data);
-        for (var property in old_data) {
-            if (old_data.hasOwnProperty(property)) {
-                new_data[property] = old_data[property];
+        var oldData = context.data;
+        var newData = Object.create(oldData);
+        for (var property in oldData) {
+            if (oldData.hasOwnProperty(property)) {
+                newData[property] = oldData[property];
             }
         }
-        context.data = new_data;
+        context.data = newData;
 
-        sub_controller(context, function() {
+        subController(context, function() {
             // Go back to the old data, before calling back to our
             // parent.
-            context.data = old_data;
+            context.data = oldData;
             callback.apply(null, arguments);
         });
     };

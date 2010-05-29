@@ -25,17 +25,17 @@
 // Controllers are actually defined in sub-modules, but are exposed
 // here for ease of use.
 var core = require('./core');
-var serve_file = require('./serve_file');
+var serveFile = require('./serve_file');
 var generic = require('./generic');
 
-exports.create_router = core.create_router;
-exports.create_method_map = core.create_method_map;
-exports.create_error_handler = core.create_error_handler;
-exports.create_fallback = core.create_fallback;
+exports.createRouter = core.createRouter;
+exports.createMethodMap = core.createMethodMap;
+exports.createErrorHandler = core.createErrorHandler;
+exports.createFallback = core.createFallback;
 
-exports.create_file_server = serve_file.create_file_server;
+exports.createFileServer = serveFile.createFileServer;
 
-exports.create_static_content = generic.create_static_content;
-exports.create_template_renderer = generic.create_template_renderer;
-exports.create_error_generator = generic.create_error_generator;
+exports.createStaticContent = generic.createStaticContent;
+exports.createTemplateRenderer = generic.createTemplateRenderer;
+exports.createErrorGenerator = generic.createErrorGenerator;
 

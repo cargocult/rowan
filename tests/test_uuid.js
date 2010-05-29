@@ -4,7 +4,7 @@
 var rowan = require("rowan");
 
 // Build the tests.
-var tests = {name:"test_uuid.js"};
+var tests = {name:"testUuid.js"};
 
 var UUID_RE = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 tests.testUUID = function(context) {
