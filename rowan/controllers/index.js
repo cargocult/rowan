@@ -27,6 +27,7 @@
 var core = require('./core');
 var serveFile = require('./serve_file');
 var generic = require('./generic');
+var filters = require('./filters');
 
 exports.createRouter = core.createRouter;
 exports.createMethodMap = core.createMethodMap;
@@ -39,3 +40,11 @@ exports.createStaticContent = generic.createStaticContent;
 exports.createTemplateRenderer = generic.createTemplateRenderer;
 exports.createErrorGenerator = generic.createErrorGenerator;
 
+exports.respondWithContent = generic.responseWithContent;
+exports.respondWithHTML = generic.respondWithHTML;
+exports.respondWithText = generic.respondWithText;
+exports.respondWithJSON = generic.respondWithJSON;
+
+exports.ensureValidMethod = filters.ensureValidMethod;
+exports.ensureGET = filters.ensureGET;
+exports.ensurePOST = filters.ensurePOST;

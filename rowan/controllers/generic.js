@@ -5,20 +5,68 @@
 var template = require('../template');
 var core = require('../core');
 
+// ---------------------------------------------------------------------------
+// CONVENIENCE RESPONDERS
 
 /**
- * A utility function that responds to a request in one call.
+ * At the end of a controller, you often want to just output some
+ * content, with no further headers, and with a 200 status code, then
+ * call the callback with no errors. This function does that. Use it
+ * at the end of a controller by calling:
+ *
+ *    return respondWithContent(context, callback, "my content");
+ *
+ * You can add a 4th argument if you don't want the default content
+ * type (text/html). To return JSON, use the respondWithJSON function.
  */
-responseUtil = function (context, callback, content, contentType) {
-    contentType = contentType || 'text/plain';
-
+var respondWithContent = function (context, callback, content, contentType) {
     context.response.setStatus(200);
-    context.response.addHeaders({"Content-Type":contentType});
-
+    context.response.addHeaders({"Content-Type":contentType || 'text/html'});
     context.response.write(content);
     context.response.end();
-    callback(null);
+    return callback(null);
 };
+exports.respondWithContent = respondWithContent;
+exports.respondWithHTML = respondWithContent;
+
+/**
+ * As respondWithContent, but assumes a text/plain mime type unless
+ * another is given.
+ */
+var respondWithText = function (context, callback, content, contentType) {
+    return respondWithContent(
+        context, callback, content, contentType || "text/plain"
+    );
+};
+exports.respondWithText = respondWithText;
+
+/**
+ * At the end of a controller, you often want to just output some json
+ * data, with no further headers, and with a 200 status code, then
+ * call the callback with no errors. This function does that. Use it
+ * at the end of a controller by calling:
+ *
+ *    return respondWithJSON(context, callback, {data:"my content"});
+ *
+ * The json data passed can either be an object (which will be
+ * pass to JSON.stringify) or a string.
+ */
+var respondWithJSON = function (context, callback, data, contentType) {
+    if (typeof data == 'object') {
+        try {
+            data = JSON.stringify(data);
+        } catch (err) {
+            return callback(err);
+        }
+    }
+    return respondWithContent(
+        context, callback, data, contentType || "application/json"
+    );
+};
+exports.respondWithJSON = respondWithJSON;
+
+// ---------------------------------------------------------------------------
+// CONTROLLER GENERATORS
 
 /**
  * A controller that outputs the given content verbatim. The content type
@@ -26,7 +74,7 @@ responseUtil = function (context, callback, content, contentType) {
  */
 exports.createStaticContent = function (content, contentType) {
     return function (context, callback) {
-        responseUtil(context, callback, content, contentType);
+        respondWithContent(context, callback, content, contentType);
     };
 };
 
@@ -45,11 +93,11 @@ exports.createTemplateRenderer =
             // Render the template.
             template.render(
                 templateName, dataObject,
-                function (err, result) {
+                function (err, renderedContent) {
                     if (err) callback(err);
                     else {
-                        responseUtil(
-                            context, callback, result, contentType
+                        respondWithContent(
+                            context, callback, renderedContent, contentType
                         );
                     }
                 });

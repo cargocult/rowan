@@ -78,7 +78,7 @@ exports.DataStore = DataStore = {
 
         // The object must have an id to be saved.
         if (!object.id) {
-            callback({
+            return callback({
                 name:"DataStoreSaveError",
                 message:"To be saved, an object must have an id."
             });
@@ -504,7 +504,7 @@ exports.DataStore = DataStore = {
             if (thawFn === null) {
                 // Thaw functions can be null, to say "I'm expecting
                 // things with such-and-such a type, but don't worry about
-                // finding a thaw function."""
+                // finding a thaw function."
                 thawFn = this._defaultThawHandler;
             } else if (!thawFn) {
                 // We found a type, weren't told we could ignore

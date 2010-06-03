@@ -1,5 +1,3 @@
-var sys = require('sys');
-
 // Internal construtor for our errors.
 var RowanResponseError = function(message) {
     this.name = "RowanResponseError";

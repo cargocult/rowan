@@ -19,10 +19,7 @@ exports.createRouter = function(routes) {
             if (match) {
                 // Add any matched groups.
                 if (match.length > 1) {
-                    if (!('patternGroups' in context)) {
-                        context.patternGroups = [];
-                    }
-                    context.patternGroups += match.slice(1);
+                    context.patternGroups = match.slice(1);
                 }
 
                 // Update the unprocessed path.
