@@ -22,7 +22,6 @@ var suite = new rowan.utils.test.TestSuite(
 // Accumulate the tests from each module.
 suite.addSuite(require('./test_test').getTests());
 suite.addSuite(require('./test_uuid').getTests());
-suite.addSuite(require('./test_db_couch').getTests());
 
 // Run the test system.
 suite.run();

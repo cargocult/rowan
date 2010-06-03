@@ -6,7 +6,6 @@
 // Expose sub-modules
 exports.controllers = require('./controllers');
 exports.core = require('./core');
-exports.db = require('./db');
 exports.information = require('./information');
 exports.template = require('./template');
 exports.utils = require('./utils');
