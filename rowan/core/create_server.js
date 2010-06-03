@@ -49,7 +49,7 @@ exports.createRowanServer = function (rootController, options) {
 
         // Build the initial context data and call the root controller.
         var context = {
-            request:request,
+            request:rowanHttp.RowanRequest(request),
             response:rowanHttp.RowanResponse(response),
             remainingPath:path,
             // A structure for holding internal data. This is used by
