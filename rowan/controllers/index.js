@@ -33,6 +33,7 @@ exports.createRouter = core.createRouter;
 exports.createMethodMap = core.createMethodMap;
 exports.createErrorHandler = core.createErrorHandler;
 exports.createFallback = core.createFallback;
+exports.createSubtreeData = core.createSubtreeData;
 
 exports.createFileServer = serveFile.createFileServer;
 

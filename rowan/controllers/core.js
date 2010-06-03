@@ -2,6 +2,7 @@
  * Core routers that form the boughs of most rowan trees.
  */
 var errors = require('../core/errors');
+var sys = require('sys');
 
 /**
  * A router holds any number of child controllers along with a regular
@@ -176,9 +177,9 @@ exports.createSubtreeData = function(data, subController) {
         // prototype.
         var oldData = context.data;
         var newData = Object.create(oldData);
-        for (var property in oldData) {
-            if (oldData.hasOwnProperty(property)) {
-                newData[property] = oldData[property];
+        for (var property in data) {
+            if (data.hasOwnProperty(property)) {
+                newData[property] = data[property];
             }
         }
         context.data = newData;
