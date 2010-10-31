@@ -14,7 +14,7 @@ var sys = require('sys');
 exports.createRouter = function(routes) {
     return function(context, callback) {
         var path = context.remainingPath;
-        for (i in routes) {
+        for (var i in routes) {
             var route = routes[i];
             var match = route.pattern.exec(path)
             if (match) {
